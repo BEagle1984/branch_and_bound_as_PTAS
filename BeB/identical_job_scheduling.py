@@ -1,4 +1,5 @@
-from bounds.identical_job_scheduling import binary_search, linear_relaxation
+from profiling.identical_job_scheduling import Profiling
+from bounds.identical_job_scheduling import binary_search
 from utils import is_integer_val, is_integer_sol
 import itertools as it
 import time
@@ -18,10 +19,18 @@ class Node:
         self.UB = None
         self.X_int = None
 
+        # Profile key is a tuple (depth, histogram) describing the load distribution and is used to detect nodes with similar profiles
+        self.profile_key = None
+        self.has_similar_profile = False
+
     def __lt__(self, other):
         """
-        Compare two nodes. We will use a min heapq. The smallest lower bound is the best node (the "smallest" node)
+        Compare two nodes. Nodes without similar profiles are prioritized.
+        If both have or both don't have similar profiles, fall back to the original strategy.
         """
+        if self.has_similar_profile != other.has_similar_profile:
+            return not self.has_similar_profile  # prioritize nodes without similar profiles
+
         if self.strategy == "lowest_lower_bound":
             return self.LB <= other.LB
         elif self.strategy == "depth_first":
@@ -49,6 +58,9 @@ class BranchAndBound:
 
         # Control on alpha
         assert 0 < self.epsilon <= 1, "Alpha must be between 0 (<) and 1 (= 1 == Exact B&B)"
+
+        # Profiling logic for node equivalence/pruning
+        self.profiling = Profiling(self.epsilon)
 
         # This will be instantiated in the solve method
         self.processing_times = None
@@ -272,6 +284,10 @@ class BranchAndBound:
                 # Add the node to the queue
                 node = Node(X_frac, LB, parent_node.depth + 1, self.node_selection_strategy, new_fixed, new_overhead)
                 node.update(X_int, UB)
+
+                # Compute and store profile key and has_similar_profile using the profiling utility
+                self.profiling.profile_and_compare(node, queue)
+
                 if verbose >= 2:
                     print("\t" + str(node))
                 heappush(queue, node)
