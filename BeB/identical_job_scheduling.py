@@ -287,7 +287,7 @@ class BranchAndBound:
                 node.update(X_int, UB)
 
                 # Compute and store profile key and has_similar_profile using the profiling utility
-                self.profiling.profile_and_compare(node, queue)
+                self.profiling.profile_and_compare(node)
 
                 if verbose >= 2:
                     print("\t" + str(node))

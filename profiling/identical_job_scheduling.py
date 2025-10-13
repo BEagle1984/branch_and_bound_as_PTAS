@@ -3,37 +3,47 @@
 class Profiling:
     """
     Encapsulates all profiling logic for identical job scheduling.
-    Initialized with epsilon, computes bins once, and provides methods for profile key computation and flag setting.
+    Initialized with epsilon, computes bins once, and provides methods for profile key computation and similarity detection.
+    Maintains an internal dictionary to track seen profile keys partitioned by depth, enabling efficient pruning of epsilon-equivalent nodes at each depth.
     """
     def __init__(self, epsilon):
         self.epsilon = epsilon
         self.bins = self._geom_bins(epsilon)
+        # Dictionary mapping depth -> set of profile keys (histograms) seen at that depth
+        self.seen_profiles_by_depth = dict()
 
-    def profile_and_compare(self, node, queue):
+    def profile_and_compare(self, node):
         """
-        Compute the profile key for the node (using its overhead and depth) and set the has_similar_profile flag.
-        The flag is True if any node in the queue has the same profile key (i.e., is epsilon-equivalent).
+        Compute the profile key (histogram) for the node and set the has_similar_profile flag.
+        The flag is True if any node at the same depth has the same profile key (i.e., is epsilon-equivalent).
         This enables pruning and prioritization of similar nodes in the B&B tree.
+        The internal dictionary ensures efficient lookup and avoids missing previously seen profiles.
         """
         node.profile_key = self.compute_profile_key(node)
-        node.has_similar_profile = any(
-            hasattr(n, 'profile_key') and n.profile_key == node.profile_key for n in queue
-        )
+        depth = node.depth
+        if depth not in self.seen_profiles_by_depth:
+            self.seen_profiles_by_depth[depth] = set()
+
+        if node.profile_key in self.seen_profiles_by_depth[depth]:
+            node.has_similar_profile = True
+        else:
+            node.has_similar_profile = False
+            self.seen_profiles_by_depth[depth].add(node.profile_key)
 
     def compute_profile_key(self, node):
         """
-        Compute the profile key for a node: a tuple (depth, histogram of binned loads).
+        Compute the profile key for a node: the histogram of binned loads.
         This key is used to detect epsilon-equivalent nodes for pruning and prioritization.
         Args:
             node: Node object with 'overhead' (list of loads) and 'depth' attributes.
         Returns:
-            tuple: (depth, histogram of binned loads)
+            tuple: histogram of binned loads
         """
         hist = [0] * (len(self.bins))
         for L in node.overhead:
             idx = self._bin_index_geometric(L, self.bins)
             hist[idx] += 1
-        return (node.depth, tuple(hist))
+        return tuple(hist)
 
     @staticmethod
     def _geom_bins(epsilon):
