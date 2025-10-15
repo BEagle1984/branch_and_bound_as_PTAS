@@ -7,10 +7,11 @@ from heapq import heappush, heappop
 
 
 class Node:
-    def __init__(self, X_frac, LB, depth, strategy, fixed, overhead):
+    def __init__(self, X_frac, LB, depth, strategy, use_profiling, fixed, overhead):
         self.LB = LB
         self.X_frac = X_frac
         self.strategy = strategy
+        self.use_profiling = use_profiling
         self.depth = depth
         self.fixed = fixed
         self.overhead = overhead  # Vector of length n_machines
@@ -28,7 +29,7 @@ class Node:
         Compare two nodes. Nodes without similar profiles are prioritized.
         If both have or both don't have similar profiles, fall back to the original strategy.
         """
-        if self.has_similar_profile != other.has_similar_profile:
+        if self.use_profiling and self.has_similar_profile != other.has_similar_profile:
             return not self.has_similar_profile  # prioritize nodes without similar profiles
 
         if self.strategy == "lowest_lower_bound":
@@ -47,10 +48,11 @@ class Node:
 
 
 class BranchAndBound:
-    def __init__(self, node_selection_strategy, lower_bound, branching_rule, rounding_rule, epsilon):
+    def __init__(self, node_selection_strategy, use_profiling, lower_bound, branching_rule, rounding_rule, epsilon):
         self.LLB = float("inf")
         self.LUB = float("-inf")
         self.node_selection_strategy = node_selection_strategy  # ["lowest_lower_bound", "depth_first", "breadth_first"]
+        self.use_profiling = use_profiling
         self.lower_bound_strategy = lower_bound  # ["lin_relax", "bin_search"]
         self.branching_rule = branching_rule  # ["max_min_proc", "max_avg_proc", ...]
         self.rounding_rule = rounding_rule  # ["best_matching", "all_to_shortest"]
@@ -59,10 +61,8 @@ class BranchAndBound:
         # Control on alpha
         assert 0 < self.epsilon <= 1, "Alpha must be between 0 (<) and 1 (= 1 == Exact B&B)"
 
-        # Profiling logic for node equivalence/pruning
-        self.profiling = Profiling(self.epsilon)
-
         # This will be instantiated in the solve method
+        self.profiling = None
         self.processing_times = None
         self.n_machines = None
         self.n_jobs = None
@@ -173,6 +173,8 @@ class BranchAndBound:
         self.TOL = 1e-6
         self.MAX_NODES = 10_000
 
+        self.profiling = Profiling(self.epsilon, n_jobs)
+
         start = time.time()
 
         # Instantiate the root node
@@ -190,7 +192,7 @@ class BranchAndBound:
 
         # If this is not the case, we round the solution
         X_int, UB = self.rounding(X_frac, [])
-        root_node = Node(X_frac, LB, depth, self.node_selection_strategy, [], [0]*self.n_machines)
+        root_node = Node(X_frac, LB, depth, self.node_selection_strategy, self.use_profiling, [], [0]*self.n_machines)
         root_node.update(X_int, UB)
 
         # Update the global lower bound
@@ -212,6 +214,11 @@ class BranchAndBound:
         while queue:
             # Get the next node
             parent_node = heappop(queue)
+
+            if self.use_profiling and parent_node.has_similar_profile:
+                if verbose >= 2:
+                    print("Pruned by profiling")
+                continue  # We prune this node
 
             # Update the max_depth if needed
             max_depth = max(max_depth, len(parent_node.fixed))
@@ -283,11 +290,12 @@ class BranchAndBound:
                     print(f"\t Rounding done: LB = {LB}, UB = {UB}, X_frac = {X_frac}")
 
                 # Add the node to the queue
-                node = Node(X_frac, LB, parent_node.depth + 1, self.node_selection_strategy, new_fixed, new_overhead)
+                node = Node(X_frac, LB, parent_node.depth + 1, self.node_selection_strategy, self.use_profiling, new_fixed, new_overhead)
                 node.update(X_int, UB)
 
-                # Compute and store profile key and has_similar_profile using the profiling utility
-                self.profiling.profile_and_compare(node)
+                if self.use_profiling:
+                    # Compute and store profile key and has_similar_profile using the profiling utility
+                    self.profiling.profile_and_compare(node)
 
                 if verbose >= 2:
                     print("\t" + str(node))
@@ -340,5 +348,7 @@ class BranchAndBound:
         At this point, the queue is empty. 
         There is no more lower bound, so the best integer solution (self.LUB) is optimal.
         """
-        nodes_opt = nodes_explored
+        if not_yet_opt:
+            nodes_opt = nodes_explored
+
         return self.LUB, self.LUB_argmin, self.LLB, time.time() - start, nodes_explored, nodes_opt, max_depth, True
