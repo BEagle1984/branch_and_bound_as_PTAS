@@ -3,12 +3,13 @@
 class Profiling:
     """
     Encapsulates all profiling logic for identical job scheduling.
-    Initialized with epsilon, computes bins once, and provides methods for profile key computation and similarity detection.
+    Initialized with epsilon and n (number of jobs), computes bins once, and provides methods for profile key computation and similarity detection.
     Maintains an internal dictionary to track seen profile keys partitioned by depth, enabling efficient pruning of epsilon-equivalent nodes at each depth.
     """
-    def __init__(self, epsilon):
+    def __init__(self, epsilon, n):
         self.epsilon = epsilon
-        self.bins = self._geom_bins(epsilon)
+        self.n = n
+        self.bins = self._geometric_bins(epsilon)
         # Dictionary mapping depth -> set of profile keys (histograms) seen at that depth
         self.seen_profiles_by_depth = dict()
 
@@ -40,13 +41,27 @@ class Profiling:
             tuple: histogram of binned loads
         """
         hist = [0] * (len(self.bins))
-        for L in node.overhead:
-            idx = self._bin_index_geometric(L, self.bins)
+        for load in node.overhead:
+            idx = self._bin_index(load, self.bins)
             hist[idx] += 1
         return tuple(hist)
 
     @staticmethod
-    def _geom_bins(epsilon):
+    def _linear_bins(epsilon, n):
+        """
+        Generate linear bins for discretizing machine loads: 0, epsilon/n, 2*epsilon/n, ..., up to 2*(1+epsilon)^2.
+        """
+        hi = 2 * (1 + epsilon) ** 2
+        step = epsilon / n
+        bins = [0.0]
+        x = step
+        while x <= hi + 1e-12:
+            bins.append(x)
+            x += step
+        return bins
+
+    @staticmethod
+    def _geometric_bins(epsilon):
         """
         Generate geometric bins for discretizing machine loads, as required by the PTAS for identical machines.
         The bins are spaced geometrically according to epsilon, covering [0, 2*(1+epsilon)^2].
@@ -60,10 +75,10 @@ class Profiling:
         return bins
 
     @staticmethod
-    def _bin_index_geometric(x, bins):
+    def _bin_index(x, bins):
         """
         Find the index of the largest bin in 'bins' that is less than or equal to x.
-        Used to assign a load to its geometric bin for profile key computation.
+        Used to assign a load to its bin for profile key computation. Works for both linear and geometric bins.
         """
         lo, hi = 0, len(bins) - 1
         ans = 0

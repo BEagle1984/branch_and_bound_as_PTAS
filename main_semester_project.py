@@ -5,7 +5,7 @@ from exact_models.unrelated_job_scheduling import solve_unrelated_job_scheduling
 from BeB.unrelated_job_scheduling import BranchAndBound
 
 # Modify this to test different instances
-job_machines_list = [(5, 2)]  # , (50,5)] #[(5, 2), (10, 2), (10, 5), (50, 2), (50, 5), (50, 10), (50, 15), (100, 2), (100, 5), (100, 10), (100, 15)]
+job_machines_list = [(50, 5)]  # , (50,5)] #[(5, 2), (10, 2), (10, 5), (50, 2), (50, 5), (50, 10), (50, 15), (100, 2), (100, 5), (100, 10), (100, 15)]
 
 node_selection_strategy_list = ["lowest_lower_bound"]  # , "depth_first", "breadth_first"]
 lower_bound_list = ["bin_search"]  # ["lin_relax", "bin_search"]
@@ -21,7 +21,7 @@ seed_min = 0
 seed_max = 2
 
 # Set up the things you want to record
-test_problem = "identical_job_scheduling"
+test_problem = "base_identical_job_scheduling"
 test_type = "random_instances"
 
 # Create a pandas data frame to store the results
