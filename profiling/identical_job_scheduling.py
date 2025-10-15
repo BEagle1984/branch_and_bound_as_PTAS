@@ -3,15 +3,42 @@
 class Profiling:
     """
     Encapsulates all profiling logic for identical job scheduling.
-    Initialized with epsilon and n (number of jobs), computes bins once, and provides methods for profile key computation and similarity detection.
-    Maintains an internal dictionary to track seen profile keys partitioned by depth, enabling efficient pruning of epsilon-equivalent nodes at each depth.
+    Initialized with n_jobs, n_machines, processing_times, and epsilon
+    Computes the bins once, provides methods for profile key computation and similarity detection, and maintains an
+    internal dictionary to track seen profile keys partitioned by depth, enabling efficient pruning of epsilon-equivalent
+    nodes at each depth.
     """
-    def __init__(self, epsilon, n):
+
+    def __init__(self, n_jobs: int, n_machines: int, processing_times: list[int], epsilon: float):
         self.epsilon = epsilon
-        self.n = n
         self.bins = self._geometric_bins(epsilon)
+
         # Dictionary mapping depth -> set of profile keys (histograms) seen at that depth
         self.seen_profiles_by_depth = dict()
+
+        # Compute the global normalization factor (norm_scale) as the fractional optimum makespan T*
+        #
+        # In the PTAS for identical machines (Chapter 5), all processing times are
+        # conceptually divided by the global fractional optimum T*, obtained from
+        # the LP / binary-search relaxation with no fixed jobs.
+        #
+        # This normalization ensures that, in the scaled instance, the optimal
+        # makespan T_opt falls within [1, 2].
+        #
+        # Here, for identical machines, T* can be computed directly as:
+        #     T* = max(average load, largest job)
+        # We use this value (norm_scale = T*) only for profiling: machine loads are
+        # divided by it on the fly when computing rounded profiles, so that the
+        # geometric grid [0, 2*(1+ε)^2] remains valid across all instances.
+        self.norm_scale = max(sum(processing_times) / n_machines, max(processing_times))
+        self.big_job_threshold = self.epsilon * self.norm_scale
+
+    def is_big_job(self, job_processing_time):
+        """
+        Determine if a job is considered "big" based on its processing time relative to the normalization scale.
+        A job is "big" if its processing time exceeds epsilon * norm_scale.
+        """
+        return job_processing_time > self.big_job_threshold
 
     def profile_and_compare(self, node):
         """
@@ -41,8 +68,9 @@ class Profiling:
             tuple: histogram of binned loads
         """
         hist = [0] * (len(self.bins))
-        for load in node.overhead:
-            idx = self._bin_index(load, self.bins)
+        for load in node.big_only_overhead:
+            normalized_load = load / self.norm_scale
+            idx = self._bin_index(normalized_load, self.bins)
             hist[idx] += 1
         return tuple(hist)
 

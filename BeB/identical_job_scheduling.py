@@ -17,14 +17,15 @@ class ProfilingMode(Enum):
 
 
 class Node:
-    def __init__(self, X_frac, LB, depth, strategy, profiling_mode, fixed, overhead):
+    def __init__(self, X_frac, LB, depth, strategy, profiling_mode, fixed, overhead, big_only_overhead):
         self.LB = LB
         self.X_frac = X_frac
         self.strategy = strategy
         self.profiling_mode = profiling_mode
         self.depth = depth
         self.fixed = fixed
-        self.overhead = overhead  # Vector of length n_machines
+        self.overhead = overhead # Vector of length n_machines
+        self.big_only_overhead = big_only_overhead  # Vector of length n_machines, only considering big jobs (> epsilon * norm_scale)
 
         # This is updated in the solve method
         self.UB = None
@@ -183,7 +184,10 @@ class BranchAndBound:
         self.TOL = 1e-6
         self.MAX_NODES = 10_000
 
-        self.profiling = Profiling(self.epsilon, n_jobs) if self.profiling_mode != ProfilingMode.NO_PROFILING else None
+        if self.profiling_mode == ProfilingMode.NO_PROFILING:
+            self.profiling = None
+        else:
+            self.profiling = Profiling(self.n_jobs, self.n_machines, self.processing_times, self.epsilon)
 
         start = time.time()
 
@@ -202,10 +206,8 @@ class BranchAndBound:
 
         # If this is not the case, we round the solution
         X_int, UB = self.rounding(X_frac, [])
-        root_node = Node(X_frac, LB, depth, self.node_selection_strategy, self.profiling_mode, [], [0]*self.n_machines)
+        root_node = Node(X_frac, LB, depth, self.node_selection_strategy, self.profiling_mode, [], [0]*self.n_machines, [0]*self.n_machines)
         root_node.update(X_int, UB)
-        if self.profiling_mode != ProfilingMode.NO_PROFILING:
-            self.profiling.profile_and_compare(root_node)
 
         # Update the global lower bound
         self.LUB = UB
@@ -245,9 +247,13 @@ class BranchAndBound:
 
                 # Get the overheads
                 new_overhead = parent_node.overhead.copy()
+                new_big_only_overhead = parent_node.big_only_overhead.copy()
 
                 # Update the corresponding overhead of the children
-                new_overhead[q] += self.processing_times[j]
+                j_processing_time = self.processing_times[j]
+                new_overhead[q] += j_processing_time
+                if self.profiling_mode != ProfilingMode.NO_PROFILING and self.profiling.is_big_job(j_processing_time):
+                    new_big_only_overhead[q] += j_processing_time
 
                 # Fix item j on machine q
                 new_fixed = parent_node.fixed + [(j, q)]
@@ -297,7 +303,7 @@ class BranchAndBound:
                     print(f"\t Rounding done: LB = {LB}, UB = {UB}, X_frac = {X_frac}")
 
                 # Add the node to the queue
-                node = Node(X_frac, LB, parent_node.depth + 1, self.node_selection_strategy, self.profiling_mode, new_fixed, new_overhead)
+                node = Node(X_frac, LB, parent_node.depth + 1, self.node_selection_strategy, self.profiling_mode, new_fixed, new_overhead, new_big_only_overhead)
                 node.update(X_int, UB)
 
                 if self.profiling_mode != ProfilingMode.NO_PROFILING:
