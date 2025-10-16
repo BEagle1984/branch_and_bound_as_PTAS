@@ -1,6 +1,7 @@
 from itertools import product
 import pandas as pd
 import numpy as np
+from build_instances import InstanceHandler
 from exact_models.identical_job_scheduling import solve_identical_job_scheduling
 from BeB.identical_job_scheduling import BranchAndBound
 
@@ -24,26 +25,26 @@ seed_max = 2 #29
 test_problem = "identical_job_scheduling"
 test_type = "random_instances"
 
+# Instance handler
+path_instances = "instances/identical_job_scheduling/"
+instance_handler = InstanceHandler(path_instances)
+
 # Create a pandas data frame to store the results
 df = pd.DataFrame(columns=["seed", "n_machines", "n_jobs", "epsilon", "branching_rule", "node_selection", "rounding_rule", "lower_bound",
                            "best_solution", "best_bound", "runtime", "depth", "nodes_explored", "terminate",
                            "number_of_nodes_for_optimality", "optimal_solution", "opt_gap"])
 
-
 def opt_gap(best_solution, OPT_exact, tol=1e-6):
     return abs(best_solution - OPT_exact) / max(tol, OPT_exact, best_solution)
-
 
 for n_jobs, n_machines in job_machines_list:
     print(f"Starting with {n_jobs} - {n_machines}", flush=True)
     for seed in range(seed_min, seed_max + 1):
         # Set the seed
         np.random.seed(seed)
-
-        # Define the completion times
-        processing_times = np.random.randint(1, 100, n_jobs).tolist()
-
-        OPT_exact, _, status, runtime = solve_identical_job_scheduling(n_jobs, n_machines, processing_times,verbose=2)
+        
+        # Fetch a random instance with the given seed, if none exists, it will be created and saved first
+        _, _, processing_times, OPT_exact = instance_handler.fetch(n_jobs, n_machines, seed=seed, verbose=True)   
 
         for epsilon, node_selection_strategy, lower_bound, branching_rule, rounding_rule in tests_to_do:
             print("Doing", epsilon, node_selection_strategy, lower_bound, branching_rule, rounding_rule)
