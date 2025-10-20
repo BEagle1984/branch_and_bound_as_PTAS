@@ -165,7 +165,10 @@ class BranchAndBound:
             return X_int, makespan
 
     def stopping_criterion(self):
-        return self.LUB / self.LLB < 1 + self.epsilon
+        if self.profiling_mode == ProfilingMode.NO_PROFILING:
+            return self.LUB / self.LLB < 1 + self.epsilon
+        else:
+            return self.LUB / self.LLB < (1 + self.epsilon)**2
 
     def solve(self, n_jobs:int, n_machines:int, processing_times: list[int], verbose=0, opt=None):
         assert n_jobs == len(processing_times), "Number of jobs must match the length of processing_times"
