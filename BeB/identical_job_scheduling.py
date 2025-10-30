@@ -6,6 +6,7 @@ import time
 from heapq import heappush, heappop
 from enum import Enum
 
+
 # ProfilingMode controls how profiling is used in the branch-and-bound algorithm:
 #   NO_PROFILING: Profiling is completely disabled (no computation or use of profiles).
 #   PRIORITY: Profiling is used only for node prioritization in the queue (Node.__lt__), not for pruning.
@@ -24,7 +25,7 @@ class Node:
         self.profiling_mode = profiling_mode
         self.depth = depth
         self.fixed = fixed
-        self.overhead = overhead # Vector of length n_machines
+        self.overhead = overhead  # Vector of length n_machines
         self.big_only_overhead = big_only_overhead  # Vector of length n_machines, only considering big jobs (> epsilon * norm_scale)
 
         # This is updated in the solve method
@@ -106,9 +107,11 @@ class BranchAndBound:
         # Returns (X_int, makespan) with in the form of a dict: X[(j,i)] = 1 if job j is assigned to machine i.
         # It does not include the fixed jobs !!!
 
-        fractional_jobs = [j for (j, i) in X_frac.keys() if not is_integer_val(X_frac[(j, i)])]
+        fractional_jobs_assignments = [(j, i) for (j, i) in X_frac.keys() if not is_integer_val(X_frac[(j, i)])]
+        fractional_jobs = [j for (j, i) in fractional_jobs_assignments]
         fractional_jobs = list(set(fractional_jobs))
-        assert len(fractional_jobs) <= self.n_machines, "The number of fractional jobs is greater than the number of machines"
+        assert len(
+            fractional_jobs) <= self.n_machines, "The number of fractional jobs is greater than the number of machines"
 
         # Integrally assigned jobs remain there
         X_int = {k: v for k, v in X_frac.items() if is_integer_val(v) and k not in fixed}
@@ -130,9 +133,28 @@ class BranchAndBound:
         #         i = min([k for k in range(self.n_machines)], key=lambda x: self.processing_times[j][x])
         #         X_int[(j, i)] = 1
         #         completion_times[i] += self.processing_times[j][i]
-
+        #
         #     return X_int, max(completion_times)
 
+        if self.rounding_rule == "all_to_shortest":
+            # Each fractional job is put on the machine with the smallest completion time.
+            for j in fractional_jobs:
+                i = min([k for k in range(self.n_machines)], key=lambda x: completion_times[x])
+                X_int[(j, i)] = 1
+                completion_times[i] += self.processing_times[j]
+
+            return X_int, max(completion_times)
+        if self.rounding_rule == "first_machine":
+            # Each fractional job is put on the first machine it was assigned to.
+            for j in fractional_jobs:
+                assigned_machines = [i for (job, i) in fractional_jobs_assignments if job == j]
+                i = assigned_machines[0]
+                X_int[(j, i)] = 1
+                completion_times[i] += self.processing_times[j]
+                for other_i in assigned_machines[1:]:
+                    X_int[(j, other_i)] = 0
+
+            return X_int, max(completion_times)
         if self.rounding_rule == "best_matching":
             # The at most m fractional jobs are assigned in a matching such that the total makespan is minimal.
             # We iterate through all possible placements of the (<=m) fractional jobs on the m machines.
@@ -168,9 +190,9 @@ class BranchAndBound:
         if self.profiling_mode == ProfilingMode.NO_PROFILING:
             return self.LUB / self.LLB < 1 + self.epsilon
         else:
-            return self.LUB / self.LLB < (1 + self.epsilon)**2
+            return self.LUB / self.LLB < (1 + self.epsilon) ** 2
 
-    def solve(self, n_jobs:int, n_machines:int, processing_times: list[int], verbose=0, opt=None):
+    def solve(self, n_jobs: int, n_machines: int, processing_times: list[int], verbose=0, opt=None):
         assert n_jobs == len(processing_times), "Number of jobs must match the length of processing_times"
         assert n_machines > 0, "There must be at least one machine"
 
@@ -185,7 +207,7 @@ class BranchAndBound:
 
         self.verbose = verbose
         self.TOL = 1e-6
-        self.MAX_NODES = 10_000
+        self.MAX_NODES =1_000
 
         if self.profiling_mode == ProfilingMode.NO_PROFILING:
             self.profiling = None
@@ -196,7 +218,7 @@ class BranchAndBound:
 
         # Instantiate the root node
         depth = 0
-        X_frac, LB, feas = self.lower_bound([0]*self.n_machines, [])
+        X_frac, LB, feas = self.lower_bound([0] * self.n_machines, [])
         self.LLB = LB
 
         # If X_frac is integer, we have an optimal solution and return
@@ -209,7 +231,8 @@ class BranchAndBound:
 
         # If this is not the case, we round the solution
         X_int, UB = self.rounding(X_frac, [])
-        root_node = Node(X_frac, LB, depth, self.node_selection_strategy, self.profiling_mode, [], [0]*self.n_machines, [0]*self.n_machines)
+        root_node = Node(X_frac, LB, depth, self.node_selection_strategy, self.profiling_mode, [],
+                         [0] * self.n_machines, [0] * self.n_machines)
         root_node.update(X_int, UB)
 
         # Update the global lower bound
@@ -306,7 +329,8 @@ class BranchAndBound:
                     print(f"\t Rounding done: LB = {LB}, UB = {UB}, X_frac = {X_frac}")
 
                 # Add the node to the queue
-                node = Node(X_frac, LB, parent_node.depth + 1, self.node_selection_strategy, self.profiling_mode, new_fixed, new_overhead, new_big_only_overhead)
+                node = Node(X_frac, LB, parent_node.depth + 1, self.node_selection_strategy, self.profiling_mode,
+                            new_fixed, new_overhead, new_big_only_overhead)
                 node.update(X_int, UB)
 
                 if self.profiling_mode != ProfilingMode.NO_PROFILING:
@@ -337,9 +361,8 @@ class BranchAndBound:
             We update LLB as the minimal lower bound in the queue, if it's not empty. Else, it is 
             simply self.LUB.
             """
-            if verbose >= 2:
-                print("Nodes explored:", nodes_explored)
-                print("Queue length = ", len(queue))
+            if verbose >= 2 or (verbose >= 1 and nodes_explored % 100 == 0):
+                print(f"Nodes explored: {nodes_explored}, Queue length = {len(queue)}, Current upper bound: {self.LUB}")
 
             # It might happen that min(node.LB for node in queue) is not "real LLB", if it is achieved by
             # an integral node that we did not add to the queue. Then, the real LLB is LUB.

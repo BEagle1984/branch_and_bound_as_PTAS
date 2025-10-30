@@ -106,11 +106,12 @@ class InstanceHandler:
         if seed is not None:
             np.random.seed(seed)
         processing_times = np.random.randint(1, 100, n_jobs).tolist()
-        if verbose:
-            print("Solving for optimal makespan...")
-        OPT_exact, _, status, runtime = solve_identical_job_scheduling(n_jobs, n_machines, processing_times)
-        if verbose:
-            print(f"Generated instance with optimal makespan: {OPT_exact}")
+        OPT_exact = 0.0
+        # if verbose:
+        #     print("Solving for optimal makespan...")
+        # OPT_exact, _, status, runtime = solve_identical_job_scheduling(n_jobs, n_machines, processing_times)
+        # if verbose:
+        #     print(f"Generated instance with optimal makespan: {OPT_exact}")
         return processing_times, OPT_exact
     
     def _save(self, n_jobs: int, n_machines: int, processing_times: list[int], OPT_exact: float, seed: int | None = None, verbose: bool = False) -> None:
@@ -135,8 +136,8 @@ if __name__ == "__main__":
     path_instances = "instances/identical_job_scheduling/"
     instance_handler = InstanceHandler(path_instances)
 
-    n_jobs_list = [5, 10, 20, 50, 100]
-    n_machines_list = [2, 3, 5, 10, 20, 50]
+    n_jobs_list = [100,200]
+    n_machines_list = [50]
 
     print(f"Processing {len(n_jobs_list) * len(n_machines_list)} instances...")
     

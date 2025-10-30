@@ -6,21 +6,21 @@ from exact_models.identical_job_scheduling import solve_identical_job_scheduling
 from BeB.identical_job_scheduling import BranchAndBound, ProfilingMode
 
 # Modify this to test different instances
-job_machines_list = [(50, 5)] #[(5, 2), (10, 2), (10, 5), (20, 5), (50, 2), (50, 5)] #, (50, 10), (50, 15), (100, 2), (100, 5), (100, 10), (100, 15)]
+job_machines_list = [(200, 50)] #[(5, 2), (10, 2), (10, 5), (20, 5), (50, 2), (50, 5)] #, (50, 10), (50, 15), (100, 2), (100, 5), (100, 10), (100, 15)]
 
-node_selection_strategy_list = ["lowest_lower_bound", "depth_first", "breadth_first"]
+node_selection_strategy_list = ["lowest_lower_bound"] #, "depth_first", "breadth_first"]
 node_selection_profiling_mode_list = [ProfilingMode.NO_PROFILING, ProfilingMode.PRIORITY, ProfilingMode.PRUNE]
 lower_bound_list = ["greedy"]
 branching_rule_list = ["max_proc"]
-rounding_rule_list = ["best_matching"]
-epsilon_list = [0.001] #[0.1, 0.05, 0.01]
+rounding_rule_list = ["all_to_shortest"]
+epsilon_list = [0.1, 0.2] #[0.1, 0.05, 0.01]
 
 tests_to_do = product(epsilon_list, node_selection_strategy_list, node_selection_profiling_mode_list, lower_bound_list,
                       branching_rule_list, rounding_rule_list)
 tests_to_do = list(tests_to_do)
 
 seed_min = 42
-seed_max = 45 #29
+seed_max = 42 #29
 
 # Set up the things you want to record
 test_problem = "identical_job_scheduling"
@@ -51,7 +51,7 @@ for n_jobs, n_machines in job_machines_list:
             print("Doing", epsilon, node_selection_strategy, profiling_mode.name, lower_bound, branching_rule, rounding_rule)
             beb = BranchAndBound(node_selection_strategy, profiling_mode, lower_bound, branching_rule, rounding_rule, epsilon)
             # self.LUB, self.LUB_argmin, self.LLB, time.time() - start, nodes_explored, nodes_opt, max_depth, True
-            best_solution, X_int, LB, runtime, nodes_explored, nodes_opt, max_depth, terminate = beb.solve(n_jobs, n_machines, processing_times, verbose=0, opt=OPT_exact)
+            best_solution, X_int, LB, runtime, nodes_explored, nodes_opt, max_depth, terminate = beb.solve(n_jobs, n_machines, processing_times, verbose=2, opt=OPT_exact)
 
             print(OPT_exact, best_solution)
             assert round(best_solution) >= round(OPT_exact), "Our solution cannot be better than the optimal"
