@@ -207,7 +207,7 @@ class BranchAndBound:
 
         self.verbose = verbose
         self.TOL = 1e-6
-        self.MAX_NODES =1_000
+        self.MAX_NODES = 100_000
 
         if self.profiling_mode == ProfilingMode.NO_PROFILING:
             self.profiling = None
