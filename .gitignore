@@ -1,7 +1,5 @@
 .idea/
 .venv/
-tests/
-*.csv
 algo.md
 __pycache__
 tests/
