@@ -7,59 +7,153 @@ import concurrent.futures
 
 from exact_models.identical_job_scheduling import solve_identical_job_scheduling
 
+
+class InstanceTemplate:
+    def __init__(self, n_jobs: int, n_machines: int) -> None:
+        self.n_jobs = n_jobs
+        self.n_machines = n_machines
+        self.processing_times = []
+        self.makespan = 0.0
+
+        self._filename_prefix = "Instance"
+        self._filename_infix = ""
+        self._filename_suffix = "J{n_jobs}_M{n_machines}.txt"
+
+    def get(self) -> tuple[int, int, list[int], float]:
+        return self.n_jobs, self.n_machines, self.processing_times, self.makespan
+    
+    def set(self, n_jobs: int, n_machines: int, processing_times: list[int], makespan: float) -> None:
+        self.n_jobs = n_jobs
+        self.n_machines = n_machines
+        self.processing_times = processing_times
+        self.makespan = makespan
+
+    def filename_template(self) -> str:
+        return f"{self._filename_prefix}{'_' if self._filename_infix else ''}{self._filename_infix}_{self._filename_suffix}"
+
+    def filename(self) -> str:
+        raise NotImplementedError("This method should be implemented by subclasses.")
+
+    def _generate(self) -> None:
+        raise NotImplementedError("This method should be implemented by subclasses.")
+    
+    def solve(self) -> tuple[int, int, list[int], float]:
+        if self.processing_times is None or not self.processing_times:
+            self._generate()
+        self.makespan, _, _, _ = solve_identical_job_scheduling(self.n_jobs, self.n_machines, self.processing_times)
+        return self.get()
+
+    def __str__(self):
+        return self.filename().replace(self._filename_prefix, "").replace(".txt", "")[1:]
+
+class UniformInstance(InstanceTemplate):
+    def __init__(self, n_jobs: int, n_machines: int, lb: int = 1, ub: int = 99, seed: int | None = None) -> None:
+        """
+        Initialize a uniform instance generator.
+
+        Args:
+            n_jobs (int): Number of jobs
+            n_machines (int): Number of machines
+            lb (int): Lower bound for processing times (inclusive)
+            ub (int): Upper bound for processing times (inclusive)
+            seed (int, optional): Random seed for reproducibility
+        """
+        super().__init__(n_jobs, n_machines)
+        self._filename_infix = f"Uniform{lb}-{ub}_Seed{seed if seed is not None else 'D'}"
+        self.lb = lb
+        self.ub = ub
+        self.seed = seed
+
+    def filename(self) -> str:
+        return self.filename_template().format(lb=self.lb, ub=self.ub, seed=self.seed, n_jobs=self.n_jobs, n_machines=self.n_machines)
+
+    def _generate(self) -> None:
+        if self.seed is not None:
+            np.random.seed(self.seed)
+        self.processing_times = np.random.randint(self.lb, self.ub+1, self.n_jobs).tolist()
+
+class SmallBigInstance(InstanceTemplate):
+    def __init__(self, n_sj: int, lb_sj: int, ub_sj: int, n_bj: int, lb_bj: int, ub_bj: int, n_machines: int, seed: int | None = None) -> None:
+        """
+        Initialize a small-big instance generator.
+
+        Args:
+            n_sj (int): Number of small jobs
+            lb_sj (int): Lower bound for small job processing times (inclusive)
+            ub_sj (int): Upper bound for small job processing times (inclusive)
+            n_bj (int): Number of big jobs
+            lb_bj (int): Lower bound for big job processing times (inclusive)
+            ub_bj (int): Upper bound for big job processing times (inclusive)
+            n_machines (int): Number of machines
+        """
+        super().__init__(n_sj + n_bj, n_machines)
+        self._filename_infix = f"{n_sj}Small{lb_sj}-{ub_sj}_{n_bj}Large{lb_bj}-{ub_bj}_Seed{seed if seed is not None else 'D'}"
+        self.n_sj = n_sj
+        self.n_bj = n_bj
+        self.lb_sj = lb_sj
+        self.ub_sj = ub_sj
+        self.lb_bj = lb_bj
+        self.ub_bj = ub_bj
+        self.seed = seed
+
+    def filename(self) -> str:
+        return self.filename_template().format(n_sj=self.n_sj, lb_sj=self.lb_sj, ub_sj=self.ub_sj, n_bj=self.n_bj, lb_bj=self.lb_bj, ub_bj=self.ub_bj, seed=self.seed, n_jobs=self.n_jobs, n_machines=self.n_machines)
+
+    def _generate(self) -> None:
+        if self.seed is not None:
+            np.random.seed(self.seed)
+        array_sj = np.random.randint(self.lb_sj, self.ub_sj + 1, self.n_sj)
+        array_bj = np.random.randint(self.lb_bj, self.ub_bj + 1, self.n_bj)
+        data = np.concatenate([array_sj, array_bj])
+        np.random.shuffle(data)
+        self.processing_times = data.tolist()
+
 class InstanceHandler:
     def __init__(self, path: str) -> None:
-        self.filename_template = "Instance{seed}{sort_suffix}_J_M_-_{n_jobs}_{n_machines}_.txt"
+        #self.filename_template = "Instance{seed}{sort_suffix}_J_M_-_{n_jobs}_{n_machines}_.txt"
         self.path = path
         os.makedirs(self.path, exist_ok=True)
 
-    def fetch(self, n_jobs: int, n_machines: int, seed: int | None = None, verbose: bool = False, sort_descending: bool = False) -> tuple[int, int, list[int], float]:
+    def fetch(self, instance: InstanceTemplate, verbose: bool = False) -> tuple[int, int, list[int], float]:
         """
         Fetch an instance with the specified number of jobs and machines.
         If the instance exists, load it from file. Otherwise, create a new instance.
         
         Args:
-            n_jobs (int): Number of jobs
-            n_machines (int): Number of machines
-            seed (int, optional): Random seed for instance generation
+            instance (InstanceTemplate): Instance template containing n_jobs, n_machines, and optionally seed
             verbose (bool, optional): Enable verbose output
-            sort_descending (bool, optional): Sort processing times in descending order
             
         Returns:
             tuple: (n_jobs, n_machines, processing_times, OPT_exact)
         """
-        if verbose:
-            print(f"Fetching instance: {n_jobs} jobs, {n_machines} machines, sorted: {sort_descending}")
         
-        if self._exists(n_jobs, n_machines, seed, verbose, sort_descending):
+        if verbose:
+            print(f"Fetching instance: {instance.n_jobs} jobs, {instance.n_machines} machines")
+
+        if self._exists(instance, verbose):
             if verbose:
                 print("Instance found, loading from file")
-            return self._load(n_jobs, n_machines, seed, verbose, sort_descending)
+            self._load(instance, verbose)
         else:
             if verbose:
                 print("Instance not found, generating new instance")
-            return self._generate_and_save(n_jobs, n_machines, seed, verbose, sort_descending)
-    
-    def _exists(self, n_jobs: int, n_machines: int, seed: int | None = None, verbose: bool = False, sort_descending: bool = False) -> bool:
+            self._solve_and_save(instance, verbose)
+        return instance.get()
+
+    def _exists(self, instance: InstanceTemplate, verbose: bool = False) -> bool:
         """Check if an instance file exists for the given parameters."""
-        seed_str = str(seed) if seed is not None else ""
-        sort_suffix = "s" if sort_descending else ""
-        filename = self.filename_template.format(seed=seed_str, sort_suffix=sort_suffix, n_jobs=n_jobs, n_machines=n_machines)
-        full_path = os.path.join(self.path, filename)
+        full_path = os.path.join(self.path,  instance.filename())
         exists = os.path.exists(full_path)
         if verbose:
-            print(f"Checking file: {filename} - {'Found' if exists else 'Not found'}")
+            print(f"Checking file: {instance.filename()} - {'Found' if exists else 'Not found'}")
         return exists
 
-    def _load(self, n_jobs: int, n_machines: int, seed: int | None = None, verbose: bool = False, sort_descending: bool = False) -> tuple[int, int, list[int], float]:
+    def _load(self, instance: InstanceTemplate, verbose: bool = False) -> None:
         """Load an existing instance from file."""
-        seed_str = str(seed) if seed is not None else ""
-        sort_suffix = "s" if sort_descending else ""
-        filename = self.filename_template.format(seed=seed_str, sort_suffix=sort_suffix, n_jobs=n_jobs, n_machines=n_machines)
-        full_path = os.path.join(self.path, filename)
+        full_path = os.path.join(self.path, instance.filename())
         if verbose:
-            print(f"Loading instance from: {filename}")
-        
+            print(f"Loading instance from: {full_path}")
+
         with open(full_path, 'r') as f:
             lines = f.readlines()
         
@@ -89,79 +183,57 @@ class InstanceHandler:
         last_line = lines[2 + n_jobs_loaded].strip()
         if "Optimal makespan =" not in last_line:
             raise ValueError(f"Invalid file format. Expected last line to contain 'Optimal makespan =', but got: '{last_line}'")
-        OPT_exact = float(last_line.split("=")[1].strip())
+        makespan = float(last_line.split("=")[1].strip())
         
         if verbose:
-            print(f"Loaded instance with optimal makespan: {OPT_exact}")
-        
-        assert n_jobs_loaded == n_jobs, "Number of jobs does not match"
-        assert n_machines_loaded == n_machines, "Number of machines does not match"
-        return n_jobs_loaded, n_machines_loaded, processing_times, OPT_exact
-    
-    def _generate_and_save(self, n_jobs: int, n_machines: int, seed: int | None = None, verbose: bool = False, sort_descending: bool = False) -> tuple[int, int, list[int], float]:
-        """Generate a new instance and save it to file."""
-        processing_times, OPT_exact = self._generate(n_jobs, n_machines, seed, verbose, sort_descending)
-        self._save(n_jobs, n_machines, processing_times, OPT_exact, seed, verbose, sort_descending)
-        return n_jobs, n_machines, processing_times, OPT_exact
-    
-    def _generate(self, n_jobs: int, n_machines: int, seed: int | None = None, verbose: bool = False, sort_descending: bool = False) -> tuple[list[int], float]:
-        """Generate a new instance with random processing times."""
-        if verbose:
-            print(f"Generating instance with seed: {seed}, sorted: {sort_descending}")
-        if seed is not None:
-            np.random.seed(seed)
-        processing_times = np.random.randint(1, 100, n_jobs).tolist()
-        
-        # Sort processing times in descending order if requested
-        if sort_descending:
-            processing_times.sort(reverse=True)
-            if verbose:
-                print("Processing times sorted in descending order")
-        
-        if verbose:
-            print("Solving for optimal makespan...")
-        OPT_exact, _, status, runtime = solve_identical_job_scheduling(n_jobs, n_machines, processing_times)
-        if verbose:
-            print(f"Generated instance with optimal makespan: {OPT_exact}")
-        return processing_times, OPT_exact
-    
-    def _save(self, n_jobs: int, n_machines: int, processing_times: list[int], OPT_exact: float, seed: int | None = None, verbose: bool = False, sort_descending: bool = False) -> None:
-        """Save an instance to file."""
-        seed_str = str(seed) if seed is not None else ""
-        sort_suffix = "s" if sort_descending else ""
-        filename = self.filename_template.format(seed=seed_str, sort_suffix=sort_suffix, n_jobs=n_jobs, n_machines=n_machines)
-        full_path = os.path.join(self.path, filename)
-        if verbose:
-            print(f"Saving instance to: {filename}")
-        with open(full_path, 'w') as f:
-            f.write(f"Jobs, Machines = {n_jobs}, {n_machines}\n")
-            # Write each processing time on a separate line
-            sorted_note = " (sorted in descending order)" if sort_descending else ""
-            f.write(f"Processing times{sorted_note} (line n contains processing time for job n for machines 1 to m):\n")
-            for time in processing_times:
-                f.write(f"{time}\n")
-            f.write(f"Optimal makespan = {OPT_exact}\n")
-        print(f"Instance saved to {full_path}")
+            print(f"Loaded instance with optimal makespan: {makespan}")
 
+        assert n_jobs_loaded == instance.n_jobs, "Number of jobs does not match"
+        assert n_machines_loaded == instance.n_machines, "Number of machines does not match"
+        assert len(processing_times) == n_jobs_loaded, "Number of processing times does not match number of jobs"
+        instance.set(n_jobs_loaded, n_machines_loaded, processing_times, makespan)
+
+    def _solve_and_save(self, instance: InstanceTemplate, verbose: bool = False) -> None:
+        """Solve an existing instance and save the results to file."""
+        start_time = time.time()
+        if verbose:
+            print("Solving instance...")
+        instance.solve()
+        if verbose:
+            print(f"Solved instance with makespan: {instance.makespan} [in {time.time() - start_time:.0f} seconds]")
+
+        self._save(instance, verbose)
+        if verbose:
+            print("Instance saved successfully")
+
+    def _save(self, instance: InstanceTemplate, verbose: bool = False) -> None:
+        """Save an instance to file."""
+        full_path = os.path.join(self.path, instance.filename())
+        if verbose:
+            print(f"Saving instance to: {full_path}")
+        with open(full_path, 'w') as f:
+            f.write(f"Jobs, Machines = {instance.n_jobs}, {instance.n_machines}\n")
+            # Write each processing time on a separate line
+            f.write(f"Processing times (line n contains processing time for job n for machines 1 to m):\n")
+            for time in instance.processing_times:
+                f.write(f"{time}\n")
+            f.write(f"Optimal makespan = {instance.makespan}\n")
 
 
 if __name__ == "__main__":
     path_instances = "instances/identical_job_scheduling/"
     instance_handler = InstanceHandler(path_instances)
 
-    n_processes = 14
-    time_limit_in_seconds = 60*60  # 60 minutes per batch
+    n_processes = 4
+    time_limit_in_seconds = 1*60  # 1 minute per batch
     
     # Number of results to wait for before terminating remaining processes
     # If None, waits for all processes to complete
     n_results = 5
 
     seed = 42
-    n_jobs_list = [1000]
-    n_machines_list = [200, 100, 50]
-
-    # Option to sort generated processing times in descending order (bigger to smaller)
-    sort_descending = False
+    n_jobs_list = [100]
+    n_machines_list = [20, 10]
 
     instances = [(j, m) for j in n_jobs_list for m in n_machines_list if j > m]
     print(f"Processing {len(instances)} instances in parallel batches...")
@@ -183,29 +255,28 @@ if __name__ == "__main__":
         processes_pool = Pool(processes=n_processes)
         
         # Build argument list for current instance with all seeds
-        batch_args = [(n_jobs, n_machines, s, False, sort_descending) for s in range(seed, seed + n_processes)]
-        sort_info = " (sorted)" if sort_descending else ""
-        print(f"[{time.strftime('%H:%M:%S')}] Submitting {len(batch_args)} jobs for instance ({n_jobs}, {n_machines}){sort_info}...")
+        batch_args = [(UniformInstance(n_jobs, n_machines, 1, 99, s), True) for s in range(seed, seed + n_processes)]
+        print(f"[{time.strftime('%H:%M:%S')}] Submitting {len(batch_args)} jobs for instance ({n_jobs}, {n_machines})...")
         
         # Submit individual jobs with callbacks for real-time feedback
         async_results = []
         
-        def create_job_callbacks(seed, job_index):
+        def create_job_callbacks(filename, job_index):
             """Create callback functions that know their specific seed and job index"""
             def job_completed_callback(result):
-                n_jobs_ret, n_machines_ret, processing_times, OPT_exact = result
-                print(f"  ✓ Process {job_index}/{len(batch_args)} completed - Seed {seed}: OPT={OPT_exact}")
+                n_jobs_ret, n_machines_ret, processing_times, makespan = result
+                print(f"  ✓ Process {job_index}/{len(batch_args)} completed - {filename}: makespan={makespan}")
             
             def job_error_callback(error):
-                print(f"  ✗ Process {job_index}/{len(batch_args)} failed - Seed {seed}: Error={error}")
-            
+                print(f"  ✗ Process {job_index}/{len(batch_args)} failed - {filename}: Error={error}")
+
             return job_completed_callback, job_error_callback
         
         # Submit each job individually with callbacks
         for i, args in enumerate(batch_args):
-            seed = args[2]  # Extract seed from args (n_jobs, n_machines, seed, verbose, sort_descending)
-            success_callback, error_callback = create_job_callbacks(seed, i)
-            
+            instance = args[0]  # Extract instance from args (UniformInstance, verbose)
+            success_callback, error_callback = create_job_callbacks(instance.filename(), i)
+
             async_result = processes_pool.apply_async(
                 instance_handler.fetch, 
                 args,
