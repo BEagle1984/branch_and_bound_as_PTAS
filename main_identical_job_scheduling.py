@@ -1,69 +1,65 @@
 from itertools import product
 import pandas as pd
 import numpy as np
-from build_instances import InstanceHandler
-from exact_models.identical_job_scheduling import solve_identical_job_scheduling
+from build_instances import InstanceHandler, InstanceTemplate, SmallBigInstance, UniformInstance
 from BeB.identical_job_scheduling import BranchAndBound, ProfilingMode
+from datetime import datetime
 
 # Modify this to test different instances
-job_machines_list = [(200, 50)] #[(5, 2), (10, 2), (10, 5), (20, 5), (50, 2), (50, 5)] #, (50, 10), (50, 15), (100, 2), (100, 5), (100, 10), (100, 15)]
+instances : list[InstanceTemplate] = [
+    # UniformInstance(100, 20, 1, 99, 45),
+    # SmallBigInstance(900, 1, 9, 100, 80, 99, 150, 63),
+    UniformInstance(500, 50, 1, 1000, 42)
+]
 
 node_selection_strategy_list = ["lowest_lower_bound"] #, "depth_first", "breadth_first"]
-node_selection_profiling_mode_list = [ProfilingMode.NO_PROFILING, ProfilingMode.PRIORITY, ProfilingMode.PRUNE]
+node_selection_profiling_mode_list = [ProfilingMode.PRUNE, ProfilingMode.NO_PROFILING]
 lower_bound_list = ["greedy"]
 branching_rule_list = ["max_proc"]
 rounding_rule_list = ["all_to_shortest"]
-epsilon_list = [0.1, 0.2] #[0.1, 0.05, 0.01]
+epsilon_list = [0.004, 0.002] #[0.1, 0.05, 0.01]
 
 tests_to_do = product(epsilon_list, node_selection_strategy_list, node_selection_profiling_mode_list, lower_bound_list,
                       branching_rule_list, rounding_rule_list)
 tests_to_do = list(tests_to_do)
 
-seed_min = 42
-seed_max = 42 #29
-
 # Set up the things you want to record
 test_problem = "identical_job_scheduling"
 test_type = "random_instances"
+timestamp = datetime.now().isoformat('#','seconds').replace(":", "")
 
 # Instance handler
 path_instances = "instances/identical_job_scheduling/"
 instance_handler = InstanceHandler(path_instances)
 
 # Create a pandas data frame to store the results
-df = pd.DataFrame(columns=["seed", "n_machines", "n_jobs", "epsilon", "branching_rule", "node_selection", "profiling_mode", "rounding_rule", "lower_bound",
+df = pd.DataFrame(columns=["instance", "n_machines", "n_jobs", "epsilon", "branching_rule", "node_selection", "profiling_mode", "rounding_rule", "lower_bound",
                            "best_solution", "best_bound", "runtime", "depth", "nodes_explored", "terminate",
                            "number_of_nodes_for_optimality", "optimal_solution", "opt_gap"])
 
 def opt_gap(best_solution, OPT_exact, tol=1e-6):
     return abs(best_solution - OPT_exact) / max(tol, OPT_exact, best_solution)
 
-for n_jobs, n_machines in job_machines_list:
-    print(f"Starting with {n_jobs} - {n_machines}", flush=True)
-    for seed in range(seed_min, seed_max + 1):
-        # Set the seed
-        np.random.seed(seed)
-        
-        # Fetch a random instance with the given seed, if none exists, it will be created and saved first
-        _, _, processing_times, OPT_exact = instance_handler.fetch(n_jobs, n_machines, seed=seed, verbose=True)   
+for instance in instances:
+    n_jobs, n_machines, processing_times, OPT_exact = instance_handler.fetch(instance, verbose=True)
 
-        for epsilon, node_selection_strategy, profiling_mode, lower_bound, branching_rule, rounding_rule in tests_to_do:
-            print("Doing", epsilon, node_selection_strategy, profiling_mode.name, lower_bound, branching_rule, rounding_rule)
-            beb = BranchAndBound(node_selection_strategy, profiling_mode, lower_bound, branching_rule, rounding_rule, epsilon)
-            # self.LUB, self.LUB_argmin, self.LLB, time.time() - start, nodes_explored, nodes_opt, max_depth, True
-            best_solution, X_int, LB, runtime, nodes_explored, nodes_opt, max_depth, terminate = beb.solve(n_jobs, n_machines, processing_times, verbose=2, opt=OPT_exact)
+    for epsilon, node_selection_strategy, profiling_mode, lower_bound, branching_rule, rounding_rule in tests_to_do:
+        print("Doing", epsilon, node_selection_strategy, profiling_mode.name, lower_bound, branching_rule, rounding_rule)
+        beb = BranchAndBound(node_selection_strategy, profiling_mode, lower_bound, branching_rule, rounding_rule, epsilon)
+        # self.LUB, self.LUB_argmin, self.LLB, time.time() - start, nodes_explored, nodes_opt, max_depth, True
+        best_solution, X_int, LB, runtime, nodes_explored, nodes_opt, max_depth, terminate = beb.solve(n_jobs, n_machines, processing_times, verbose=2, opt=OPT_exact)
 
-            print(OPT_exact, best_solution)
-            assert round(best_solution) >= round(OPT_exact), "Our solution cannot be better than the optimal"
+        print(OPT_exact, best_solution)
+        assert round(best_solution) >= round(OPT_exact), "Our solution cannot be better than the optimal"
 
-            df = df._append({"seed": seed, "n_jobs": n_jobs, "n_machines": n_machines, "epsilon": epsilon,
-            "branching_rule": branching_rule, "node_selection": node_selection_strategy, "profiling_mode": profiling_mode.name, "rounding_rule": rounding_rule, "lower_bound": lower_bound,
-            "best_solution": best_solution, "best_bound": LB, "runtime": runtime, "depth": max_depth, "nodes_explored": nodes_explored, "terminate": terminate,
-            "number_of_nodes_for_optimality": nodes_opt, "optimal_solution": OPT_exact, "opt_gap": opt_gap(best_solution, OPT_exact)},
-                ignore_index=True)
+        df = df._append({"instance": str(instance), "n_jobs": n_jobs, "n_machines": n_machines, "epsilon": epsilon,
+        "branching_rule": branching_rule, "node_selection": node_selection_strategy, "profiling_mode": profiling_mode.name, "rounding_rule": rounding_rule, "lower_bound": lower_bound,
+        "best_solution": best_solution, "best_bound": LB, "runtime": runtime, "depth": max_depth, "nodes_explored": nodes_explored, "terminate": terminate,
+        "number_of_nodes_for_optimality": nodes_opt, "optimal_solution": OPT_exact, "opt_gap": opt_gap(best_solution, OPT_exact)},
+        ignore_index=True)
 
-        # Logging
-        print(f"Done with seed {seed}", flush=True)
+    # Logging
+    print(f"Done with instance {instance}", flush=True)
 
-        # Save the results
-        df.to_csv(f"./output/results_{test_problem}_{test_type}.csv", index=False)
+    # Save the results
+    df.to_csv(f"./output/{timestamp}_{test_problem}_{test_type}.csv", index=False)
