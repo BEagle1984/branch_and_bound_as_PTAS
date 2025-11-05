@@ -119,9 +119,11 @@ instances : list[InstanceTemplate] = [
 
 compute_exact_solutions = False
 
-tests_list = [
+epsilons = [0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1]
+
+tests_item = lambda epsilon: [
     {
-        "epsilon": 0.02,
+        "epsilon": (lambda e: e**2+2*e)(epsilon),
         "profiling_mode": ProfilingMode.NO_PROFILING,
         "node_selection": "lowest_lower_bound",
         "lower_bound": "greedy",
@@ -129,7 +131,7 @@ tests_list = [
         "rounding_rule": "all_to_shortest",
     },
     {
-        "epsilon": 0.01,
+        "epsilon": (lambda e: e)(epsilon),
         "profiling_mode": ProfilingMode.PRUNE,
         "node_selection": "lowest_lower_bound",
         "lower_bound": "greedy",
@@ -137,6 +139,8 @@ tests_list = [
         "rounding_rule": "all_to_shortest",
     }
 ]
+
+tests_list : list[dict] = [test for epsilon in epsilons for test in tests_item(epsilon)]
 
 # Set up the things you want to record
 test_problem = "identical_job_scheduling"
@@ -148,12 +152,16 @@ path_instances = "instances/identical_job_scheduling/"
 instance_handler = InstanceHandler(path_instances)
 
 # Create a pandas data frame to store the results
-df = pd.DataFrame(columns=["instance", "n_machines", "n_jobs", "epsilon", "branching_rule", "node_selection", "profiling_mode", "rounding_rule", "lower_bound",
+df = pd.DataFrame(columns=["instance", "epsilon_range", "n_machines", "n_jobs", "epsilon", "branching_rule", "node_selection", "profiling_mode", "rounding_rule", "lower_bound",
                            "best_solution", "nodes_to_best_solution", "best_bound", "runtime", "depth", "nodes_explored", "terminate",
                            "number_of_nodes_for_optimality", "optimal_solution", "opt_gap"])
 
 for instance in instances:
     n_jobs, n_machines, processing_times, OPT_exact = instance_handler.fetch(instance, compute_exact_solutions, verbose=True)
+
+    OPT=max(max(processing_times), sum(processing_times)/n_machines)
+    normalized_processing_times = [p/OPT for p in processing_times]
+    epsilon_range_str = f"[{min(normalized_processing_times):0.6f}, {max(normalized_processing_times):0.6f}]"
 
     print(f"Starting with {instance}", flush=True)
 
@@ -176,7 +184,7 @@ for instance in instances:
 
         validate_solution()
 
-        df = df._append({"instance": str(instance), "n_jobs": n_jobs, "n_machines": n_machines, "epsilon": epsilon,
+        df = df._append({"instance": str(instance), "epsilon_range": epsilon_range_str, "n_jobs": n_jobs, "n_machines": n_machines, "epsilon": epsilon,
         "branching_rule": branching_rule, "node_selection": node_selection_strategy, "profiling_mode": profiling_mode.name, "rounding_rule": rounding_rule, "lower_bound": lower_bound,
         "best_solution": best_solution, "nodes_to_best_solution": nodes_to_best_solution, "best_bound": LB, "runtime": runtime, "depth": max_depth, "nodes_explored": nodes_explored, "terminate": terminate,
         "number_of_nodes_for_optimality": nodes_opt, "optimal_solution": OPT_exact, "opt_gap": opt_gap()},
@@ -187,3 +195,4 @@ for instance in instances:
 
     # Save the results
     df.to_csv(f"./output/{timestamp}_{test_problem}_{test_type}.csv", index=False)
+    df.to_csv(f"./output/latest_{test_problem}_{test_type}.csv", index=False, mode='w')
