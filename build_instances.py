@@ -114,7 +114,6 @@ class SmallBigInstance(InstanceTemplate):
 
 class InstanceHandler:
     def __init__(self, path: str) -> None:
-        #self.filename_template = "Instance{seed}{sort_suffix}_J_M_-_{n_jobs}_{n_machines}_.txt"
         self.path = path
         os.makedirs(self.path, exist_ok=True)
 
@@ -232,8 +231,8 @@ if __name__ == "__main__":
     path_instances = "instances/identical_job_scheduling/"
     instance_handler = InstanceHandler(path_instances)
 
-    n_processes = 4
-    time_limit_in_seconds = 1*60  # 1 minute per batch
+    n_processes = 12
+    time_limit_in_seconds = 30*60  # 30 minutes per batch
     
     # Number of results to wait for before terminating remaining processes
     # If None, waits for all processes to complete
@@ -241,10 +240,13 @@ if __name__ == "__main__":
 
     seed = 42
     n_jobs_list = [100]
-    n_machines_list = [20, 10]
+    n_machines_list = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
 
-    instances = [(j, m) for j in n_jobs_list for m in n_machines_list if j > m]
-    print(f"Processing {len(instances)} instances in parallel batches...")
+    instance_template : InstanceTemplate = lambda n_jobs, n_machines, s: UniformInstance(n_jobs, n_machines, 1, 1000, s)
+    instances_config = [(j, m) for j in n_jobs_list for m in n_machines_list if j > m]
+    
+
+    print(f"Processing {len(instances_config)} instances in parallel batches...")
     print(f"Each batch will run {n_processes} seeds in parallel for one instance")
     
     if n_results is not None:
@@ -256,14 +258,14 @@ if __name__ == "__main__":
     total_failed = 0
 
     # Process each instance as a separate batch
-    for batch_idx, (n_jobs, n_machines) in enumerate(instances, 1):
-        print(f"\n--- Batch {batch_idx}/{len(instances)}: Processing instance ({n_jobs} jobs, {n_machines} machines) ---")
-        
+    for batch_idx, (n_jobs, n_machines) in enumerate(instances_config, 1):
+        print(f"\n--- Batch {batch_idx}/{len(instances_config)}: Processing instance ({n_jobs} jobs, {n_machines} machines) ---")
+
         # Create process pool for this batch
         processes_pool = Pool(processes=n_processes)
         
         # Build argument list for current instance with all seeds
-        batch_args = [(UniformInstance(n_jobs, n_machines, 1, 99, s), True) for s in range(seed, seed + n_processes)]
+        batch_args = [(instance_template(n_jobs, n_machines, s), True) for s in range(seed, seed + n_processes)]
         print(f"[{time.strftime('%H:%M:%S')}] Submitting {len(batch_args)} jobs for instance ({n_jobs}, {n_machines})...")
         
         # Submit individual jobs with callbacks for real-time feedback
@@ -386,7 +388,7 @@ if __name__ == "__main__":
         print(f"Batch {batch_idx} finished. Moving to next batch...")
     
     print(f"\n=== Final Summary ===")
-    print(f"Total instances processed: {len(instances)}")
+    print(f"Total instances processed: {len(instances_config)}")
     print(f"Total tasks completed: {total_completed}")
     print(f"Total tasks failed: {total_failed}")
     print(f"Overall success rate: {total_completed/(total_completed + total_failed)*100:.1f}%" if (total_completed + total_failed) > 0 else "No tasks executed")
