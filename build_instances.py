@@ -1,9 +1,10 @@
 from multiprocessing.pool import Pool
 import multiprocessing
+import threading
+import concurrent.futures
 import os
 import time
 import numpy as np
-import concurrent.futures
 
 from exact_models.identical_job_scheduling import solve_identical_job_scheduling
 
@@ -232,7 +233,7 @@ if __name__ == "__main__":
     instance_handler = InstanceHandler(path_instances)
 
     n_processes = 12
-    time_limit_in_seconds = 30*60  # 30 minutes per batch
+    time_limit_in_seconds = 60  # 60 seconds per batch
     
     # Number of results to wait for before terminating remaining processes
     # If None, waits for all processes to complete
@@ -240,7 +241,7 @@ if __name__ == "__main__":
 
     seed = 42
     n_jobs_list = [100]
-    n_machines_list = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+    n_machines_list = [10, 15, 20, 25, 30, 40, 50, 60, 70, 80, 90, 100]
 
     instance_template : InstanceTemplate = lambda n_jobs, n_machines, s: UniformInstance(n_jobs, n_machines, 1, 1000, s)
     instances_config = [(j, m) for j in n_jobs_list for m in n_machines_list if j > m]
@@ -265,7 +266,7 @@ if __name__ == "__main__":
         processes_pool = Pool(processes=n_processes)
         
         # Build argument list for current instance with all seeds
-        batch_args = [(instance_template(n_jobs, n_machines, s), True) for s in range(seed, seed + n_processes)]
+        batch_args = [(instance_template(n_jobs, n_machines, s), False) for s in range(seed, seed + n_processes)]
         print(f"[{time.strftime('%H:%M:%S')}] Submitting {len(batch_args)} jobs for instance ({n_jobs}, {n_machines})...")
         
         # Submit individual jobs with callbacks for real-time feedback
@@ -301,24 +302,36 @@ if __name__ == "__main__":
         try:
             # Wait for all results in parallel using ThreadPoolExecutor
             batch_results = []
+            stop_event = threading.Event()  # Shared flag for early termination
             
-            def get_result_with_index(index_and_async_result):
+            def get_result_with_index(index_and_async_result, stop_event, time_limit):
                 i, async_result = index_and_async_result
+                start_time = time.time()
                 try:
-                    result = async_result.get(timeout=time_limit_in_seconds)
-                    return (i, True, result)  # (index, success, result)
-                except multiprocessing.TimeoutError:
-                    print(f"  ✗ Process {i+1}/{len(batch_args)} timed out after {time_limit_in_seconds}s")
-                    return (i, False, None)  # (index, failed, None)
+                    while not stop_event.is_set():
+                        elapsed_time = time.time() - start_time
+                        if elapsed_time >= time_limit:
+                            print(f"  ✗ Process {i+1} timed out after {time_limit}s")
+                            return (i, False, None)  # Timeout occurred
+
+                        try:
+                            # Attempt to get the result with a short timeout
+                            result = async_result.get(timeout=0.5)  # Check every 0.5 seconds
+                            return (i, True, result)  # (index, success, result)
+                        except multiprocessing.TimeoutError:
+                            continue  # Continue checking the stop_event
                 except Exception as e:
-                    print(f"  ✗ Process {i+1}/{len(batch_args)} failed: {e}")
+                    print(f"  ✗ Process {i+1} failed: {e}")
                     return (i, False, None)  # (index, failed, None)
+
+                # If stop_event is set, return as failed
+                return (i, False, None)
             
             # Submit all .get() calls to run in parallel using threads
             with concurrent.futures.ThreadPoolExecutor(max_workers=len(async_results)) as executor:
                 # Submit all get operations in parallel
                 future_to_index = {
-                    executor.submit(get_result_with_index, (i, async_result)): i 
+                    executor.submit(get_result_with_index, (i, async_result), stop_event, time_limit_in_seconds): i
                     for i, async_result in enumerate(async_results)
                 }
                 
@@ -336,19 +349,16 @@ if __name__ == "__main__":
                     
                     # Check if we have enough successful results and should terminate early
                     if n_results is not None and successful_results >= n_results:
-                        print(f"  ✓ Reached target of {n_results} successful results, terminating remaining threads...")
+                        print(f"  ✓ Reached target of {n_results} successful results, signaling threads to stop...")
+                        stop_event.set()  # Signal all threads to stop
                         
                         # Cancel remaining futures
                         remaining_futures = [f for f in future_to_index.keys() if not f.done()]
                         for remaining_future in remaining_futures:
-                            remaining_future.cancel()
-                        
-                        # Wait briefly for cancelled futures to finish cleanly
-                        for remaining_future in remaining_futures:
                             try:
-                                remaining_future.result(timeout=1)
+                                remaining_future.result(timeout=5)  # Increased timeout to 5 seconds
                             except (concurrent.futures.CancelledError, concurrent.futures.TimeoutError):
-                                pass
+                                print(f"Future did not terminate cleanly: done={remaining_future.done()}, cancelled={remaining_future.cancelled()}")
                         
                         break
                 
