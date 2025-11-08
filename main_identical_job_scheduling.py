@@ -5,7 +5,10 @@ from datetime import datetime
 import numpy as np
 
 def opt_gap(tol=1e-6):
-    return abs(best_solution - OPT_exact) / max(tol, OPT_exact, best_solution)
+    if OPT_exact is None:
+        return None
+    else:
+        return abs(best_solution - OPT_exact) / max(tol, OPT_exact, best_solution)
 
 def validate_solution():
     assigned_jobs = {}  # maps job -> machine
@@ -33,15 +36,48 @@ def validate_solution():
 
     # Allow a small numerical tolerance when comparing floats
     assert np.isclose(computed_makespan, float(best_solution), rtol=1e-6, atol=1e-8), f"Computed makespan {computed_makespan} does not match reported best_solution {best_solution}"
-    assert round(best_solution) >= round(OPT_exact), "Our solution cannot be better than the optimal"
+
+    if OPT_exact is not None:
+        assert round(best_solution) >= round(OPT_exact), "Our solution cannot be better than the optimal"
 
 
 # Modify this to test different instances
 instances : list[InstanceTemplate] = [
     # UniformInstance(100, 20, 1, 99, 45),
     # SmallBigInstance(900, 1, 9, 100, 80, 99, 150, 63),
-    UniformInstance(100, 10, 1, 1000, 42)
+    UniformInstance(50, 25, 1, 1000, 42),
+    UniformInstance(50, 25, 1, 1000, 43),
+    UniformInstance(50, 25, 1, 1000, 44),
+    UniformInstance(50, 25, 1, 1000, 45),
+    UniformInstance(50, 25, 1, 1000, 46),
+    UniformInstance(50, 25, 1, 1000, 47),
+    UniformInstance(50, 25, 1, 1000, 48),
+    UniformInstance(50, 25, 1, 1000, 49),
+    UniformInstance(50, 25, 1, 1000, 50),
+    UniformInstance(50, 25, 1, 1000, 51),
+    UniformInstance(100, 50, 1, 1000, 42),
+    UniformInstance(100, 50, 1, 1000, 43),
+    UniformInstance(100, 50, 1, 1000, 44),
+    UniformInstance(100, 50, 1, 1000, 45),
+    UniformInstance(100, 50, 1, 1000, 46),
+    UniformInstance(100, 50, 1, 1000, 47),
+    UniformInstance(100, 50, 1, 1000, 48),
+    UniformInstance(100, 50, 1, 1000, 49),
+    UniformInstance(100, 50, 1, 1000, 50),
+    UniformInstance(100, 50, 1, 1000, 51),
+    UniformInstance(200, 100, 1, 1000, 42),
+    UniformInstance(200, 100, 1, 1000, 43),
+    UniformInstance(200, 100, 1, 1000, 44),
+    UniformInstance(200, 100, 1, 1000, 45),
+    UniformInstance(200, 100, 1, 1000, 46),
+    UniformInstance(200, 100, 1, 1000, 47),
+    UniformInstance(200, 100, 1, 1000, 48),
+    UniformInstance(200, 100, 1, 1000, 49),
+    UniformInstance(200, 100, 1, 1000, 50),
+    UniformInstance(200, 100, 1, 1000, 51),
 ]
+
+compute_exact_solutions = False
 
 tests_list = [
     {
@@ -77,7 +113,7 @@ df = pd.DataFrame(columns=["instance", "n_machines", "n_jobs", "epsilon", "branc
                            "number_of_nodes_for_optimality", "optimal_solution", "opt_gap"])
 
 for instance in instances:
-    n_jobs, n_machines, processing_times, OPT_exact = instance_handler.fetch(instance, verbose=True)
+    n_jobs, n_machines, processing_times, OPT_exact = instance_handler.fetch(instance, compute_exact_solutions, verbose=True)
 
     print(f"Starting with {instance}", flush=True)
 
@@ -94,8 +130,7 @@ for instance in instances:
 
         beb = BranchAndBound(node_selection_strategy, profiling_mode, lower_bound, branching_rule, rounding_rule, epsilon)
 
-        best_solution, X_int, LB, runtime, nodes_explored, nodes_opt, max_depth, terminate = (
-            beb.solve(n_jobs, n_machines, processing_times, verbose=False, opt=OPT_exact))
+        best_solution, X_int, LB, runtime, nodes_explored, nodes_opt, max_depth, terminate = beb.solve(n_jobs, n_machines, processing_times, verbose=False, opt=OPT_exact)
 
         print(f"\tBest solution: {best_solution}, Nodes explored: {nodes_explored}, Runtime: {runtime:.2f}s", flush=True)
 

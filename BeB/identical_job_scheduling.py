@@ -207,7 +207,7 @@ class BranchAndBound:
 
         self.verbose = verbose
         self.TOL = 1e-6
-        self.MAX_NODES = 100_000
+        self.MAX_NODES = 1_000
 
         if self.profiling_mode == ProfilingMode.NO_PROFILING:
             self.profiling = None
@@ -373,7 +373,7 @@ class BranchAndBound:
             """
             At each iteration, check if we have actually reached the optimal solution.
             """
-            if abs(self.LUB - opt) <= self.TOL and not_yet_opt:
+            if opt is not None and abs(self.LUB - opt) <= self.TOL and not_yet_opt:
                 nodes_opt = nodes_explored
                 not_yet_opt = False
 

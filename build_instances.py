@@ -13,7 +13,7 @@ class InstanceTemplate:
         self.n_jobs = n_jobs
         self.n_machines = n_machines
         self.processing_times = []
-        self.makespan = 0.0
+        self.makespan = None
 
         self._filename_prefix = "Instance"
         self._filename_infix = ""
@@ -34,12 +34,12 @@ class InstanceTemplate:
     def filename(self) -> str:
         raise NotImplementedError("This method should be implemented by subclasses.")
 
-    def _generate(self) -> None:
+    def generate(self) -> None:
         raise NotImplementedError("This method should be implemented by subclasses.")
     
     def solve(self) -> tuple[int, int, list[int], float]:
         if self.processing_times is None or not self.processing_times:
-            self._generate()
+            self.generate()
         self.makespan, _, _, _ = solve_identical_job_scheduling(self.n_jobs, self.n_machines, self.processing_times)
         return self.get()
 
@@ -67,7 +67,7 @@ class UniformInstance(InstanceTemplate):
     def filename(self) -> str:
         return self.filename_template().format(lb=self.lb, ub=self.ub, seed=self.seed, n_jobs=self.n_jobs, n_machines=self.n_machines)
 
-    def _generate(self) -> None:
+    def generate(self) -> None:
         if self.seed is not None:
             np.random.seed(self.seed)
         self.processing_times = np.random.randint(self.lb, self.ub+1, self.n_jobs).tolist()
@@ -99,7 +99,7 @@ class SmallBigInstance(InstanceTemplate):
     def filename(self) -> str:
         return self.filename_template().format(n_sj=self.n_sj, lb_sj=self.lb_sj, ub_sj=self.ub_sj, n_bj=self.n_bj, lb_bj=self.lb_bj, ub_bj=self.ub_bj, seed=self.seed, n_jobs=self.n_jobs, n_machines=self.n_machines)
 
-    def _generate(self) -> None:
+    def generate(self) -> None:
         if self.seed is not None:
             np.random.seed(self.seed)
         array_sj = np.random.randint(self.lb_sj, self.ub_sj + 1, self.n_sj)
@@ -114,7 +114,7 @@ class InstanceHandler:
         self.path = path
         os.makedirs(self.path, exist_ok=True)
 
-    def fetch(self, instance: InstanceTemplate, verbose: bool = False) -> tuple[int, int, list[int], float]:
+    def fetch(self, instance: InstanceTemplate, solve_exact: bool = False, verbose: bool = False) -> tuple[int, int, list[int], float]:
         """
         Fetch an instance with the specified number of jobs and machines.
         If the instance exists, load it from file. Otherwise, create a new instance.
@@ -134,10 +134,14 @@ class InstanceHandler:
             if verbose:
                 print("Instance found, loading from file")
             self._load(instance, verbose)
-        else:
+        elif solve_exact:
             if verbose:
                 print("Instance not found, generating new instance")
             self._solve_and_save(instance, verbose)
+        else:
+            if verbose:
+                print("Instance not found, generating new instance")
+            instance.generate()
         return instance.get()
 
     def _exists(self, instance: InstanceTemplate, verbose: bool = False) -> bool:
