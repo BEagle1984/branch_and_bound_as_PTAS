@@ -1,4 +1,4 @@
-def is_integer_sol(X, tol=1e-6):
+def is_integer_sol(X, tol=0):
     """
     Check if the solution is integer
 
@@ -10,12 +10,12 @@ def is_integer_sol(X, tol=1e-6):
     - True if the solution is integer, False otherwise
     """
     for (j, i) in X.keys():
-        if abs(X[j, i] - round(X[j, i])) > tol:
+        if not is_integer_val(X[(j, i)], tol):
             return False
     return True
 
 
-def is_integer_val(v, tol=1e-6):
+def is_integer_val(v, tol=0):
     """
     Check if a value is integer
 
@@ -26,4 +26,4 @@ def is_integer_val(v, tol=1e-6):
     Returns:
     - True if the value is integer, False otherwise
     """
-    return abs(v - round(v)) < tol
+    return abs(v - round(v)) <= tol
