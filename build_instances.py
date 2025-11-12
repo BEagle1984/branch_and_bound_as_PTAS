@@ -35,6 +35,10 @@ class InstanceTemplate:
         raise NotImplementedError("This method should be implemented by subclasses.")
 
     def generate(self) -> None:
+        self._generate()
+        self.makespan = sum(self.processing_times) / self.n_machines
+
+    def _generate(self) -> None:
         raise NotImplementedError("This method should be implemented by subclasses.")
     
     def solve(self) -> tuple[int, int, list[int], float]:
@@ -67,7 +71,7 @@ class UniformInstance(InstanceTemplate):
     def filename(self) -> str:
         return self.filename_template().format(lb=self.lb, ub=self.ub, seed=self.seed, n_jobs=self.n_jobs, n_machines=self.n_machines)
 
-    def generate(self) -> None:
+    def _generate(self) -> None:
         if self.seed is not None:
             np.random.seed(self.seed)
         self.processing_times = np.random.randint(self.lb, self.ub+1, self.n_jobs).tolist()
