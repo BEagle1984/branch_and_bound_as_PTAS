@@ -79,6 +79,7 @@ class BranchAndBound:
         self.n_machines = None
         self.n_jobs = None
         self.LUB_argmin = None
+        self.LUB_nodes_explored = None
         self.verbose = None
         self.TOL = None
         self.MAX_NODES = None
@@ -204,6 +205,7 @@ class BranchAndBound:
         self.LLB = float("-inf")
         self.LUB = float("inf")
         self.LUB_argmin = None  # Minimization --> Upper bound --> Heuristic --> This is integer
+        self.LUB_nodes_explored = -1
 
         self.verbose = verbose
         self.TOL = 1e-6
@@ -353,6 +355,7 @@ class BranchAndBound:
                         print(f"!!! Improved global upper bound: {old_ub} --> {UB}")
                     self.LUB = UB
                     self.LUB_argmin = X_int
+                    self.LUB_nodes_explored = nodes_explored
 
             """
             We have processed all m+1 children. The ones that are relevant are put back in the queue.
@@ -381,12 +384,12 @@ class BranchAndBound:
             if nodes_explored > self.MAX_NODES:
                 if not_yet_opt:
                     nodes_opt = nodes_explored
-                return self.LUB, self.LUB_argmin, self.LLB, time.time() - start, nodes_explored, nodes_opt, max_depth, False  # Terminating because of the number of nodes
+                return self.LUB, self.LUB_argmin, self.LUB_nodes_explored, self.LLB, time.time() - start, nodes_explored, nodes_opt, max_depth, False  # Terminating because of the number of nodes
 
             if self.stopping_criterion():
                 if not_yet_opt:
                     nodes_opt = nodes_explored
-                return self.LUB, self.LUB_argmin, self.LLB, time.time() - start, nodes_explored, nodes_opt, max_depth, True  # Terminating because of the stopping criterion
+                return self.LUB, self.LUB_argmin, self.LUB_nodes_explored, self.LLB, time.time() - start, nodes_explored, nodes_opt, max_depth, True  # Terminating because of the stopping criterion
 
         """ 
         At this point, the queue is empty. 
@@ -395,4 +398,4 @@ class BranchAndBound:
         if not_yet_opt:
             nodes_opt = nodes_explored
 
-        return self.LUB, self.LUB_argmin, self.LLB, time.time() - start, nodes_explored, nodes_opt, max_depth, True
+        return self.LUB, self.LUB_argmin, self.LUB_nodes_explored, self.LLB, time.time() - start, nodes_explored, nodes_opt, max_depth, True

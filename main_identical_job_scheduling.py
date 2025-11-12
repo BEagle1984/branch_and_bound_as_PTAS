@@ -149,7 +149,7 @@ instance_handler = InstanceHandler(path_instances)
 
 # Create a pandas data frame to store the results
 df = pd.DataFrame(columns=["instance", "n_machines", "n_jobs", "epsilon", "branching_rule", "node_selection", "profiling_mode", "rounding_rule", "lower_bound",
-                           "best_solution", "best_bound", "runtime", "depth", "nodes_explored", "terminate",
+                           "best_solution", "nodes_to_best_solution", "best_bound", "runtime", "depth", "nodes_explored", "terminate",
                            "number_of_nodes_for_optimality", "optimal_solution", "opt_gap"])
 
 for instance in instances:
@@ -170,15 +170,15 @@ for instance in instances:
 
         beb = BranchAndBound(node_selection_strategy, profiling_mode, lower_bound, branching_rule, rounding_rule, epsilon)
 
-        best_solution, X_int, LB, runtime, nodes_explored, nodes_opt, max_depth, terminate = beb.solve(n_jobs, n_machines, processing_times, verbose=False, opt=OPT_exact)
+        best_solution, X_int, nodes_to_best_solution, LB, runtime, nodes_explored, nodes_opt, max_depth, terminate = beb.solve(n_jobs, n_machines, processing_times, verbose=False, opt=OPT_exact)
 
-        print(f"\tBest solution: {best_solution}, Nodes explored: {nodes_explored}, Runtime: {runtime:.2f}s", flush=True)
+        print(f"\tBest solution: {best_solution}, Nodes explored: {nodes_explored}, Nodes to best solution: {nodes_to_best_solution}, Runtime: {runtime:.2f}s", flush=True)
 
         validate_solution()
 
         df = df._append({"instance": str(instance), "n_jobs": n_jobs, "n_machines": n_machines, "epsilon": epsilon,
         "branching_rule": branching_rule, "node_selection": node_selection_strategy, "profiling_mode": profiling_mode.name, "rounding_rule": rounding_rule, "lower_bound": lower_bound,
-        "best_solution": best_solution, "best_bound": LB, "runtime": runtime, "depth": max_depth, "nodes_explored": nodes_explored, "terminate": terminate,
+        "best_solution": best_solution, "nodes_to_best_solution": nodes_to_best_solution, "best_bound": LB, "runtime": runtime, "depth": max_depth, "nodes_explored": nodes_explored, "terminate": terminate,
         "number_of_nodes_for_optimality": nodes_opt, "optimal_solution": OPT_exact, "opt_gap": opt_gap()},
         ignore_index=True)
 
