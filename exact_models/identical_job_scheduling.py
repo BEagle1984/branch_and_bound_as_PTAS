@@ -42,6 +42,9 @@ def solve_identical_job_scheduling(n_jobs: int, n_machines: int, processing_time
     for i in range(n_machines):
         solver.Add(solver.Sum(processing_times[j] * x[j, i] for j in range(n_jobs)) <= C_max)
 
+    # Sets a time limit of 60 seconds.
+    solver.SetTimeLimit(5*60000)  # Time limit in milliseconds
+
     # Solve the problem
     status = solver.Solve()
 
@@ -60,4 +63,11 @@ def solve_identical_job_scheduling(n_jobs: int, n_machines: int, processing_time
         return makespan, assignment, status, runtime
     else:
         print('No optimal solution found.')
-        return None, None, status, runtime
+        # Return the best solution found so far
+        makespan = solver.Objective().Value()
+        assignment = {}
+        for i in range(n_jobs):
+            for j in range(n_machines):
+                if x[i, j].solution_value() > 0.5:
+                    assignment[(i, j)] = 1
+        return makespan, assignment, status, runtime

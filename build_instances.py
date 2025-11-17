@@ -1,3 +1,4 @@
+from typing import Callable
 from multiprocessing.pool import Pool
 import multiprocessing
 import threading
@@ -16,6 +17,8 @@ class InstanceTemplate:
         self.processing_times = []
         self.makespan = 0.0
 
+        self._solver = solve_identical_job_scheduling
+
         self._filename_prefix = "Instance"
         self._filename_infix = ""
         self._filename_suffix = "J{n_jobs}_M{n_machines}.txt"
@@ -29,6 +32,9 @@ class InstanceTemplate:
         self.processing_times = processing_times
         self.makespan = makespan
 
+    def set_solver(self, solver: Callable[[int, int, list[int]], tuple[any, any, any, any]]) -> None:
+        self._solver = solver
+
     def filename_template(self) -> str:
         return f"{self._filename_prefix}{'_' if self._filename_infix else ''}{self._filename_infix}_{self._filename_suffix}"
 
@@ -41,7 +47,7 @@ class InstanceTemplate:
     def solve(self) -> tuple[int, int, list[int], float]:
         if self.processing_times is None or not self.processing_times:
             self._generate()
-        self.makespan, _, _, _ = solve_identical_job_scheduling(self.n_jobs, self.n_machines, self.processing_times)
+        self.makespan, _, _, _ = self._solver(self.n_jobs, self.n_machines, self.processing_times)
         return self.get()
 
     def __str__(self):
@@ -225,14 +231,14 @@ if __name__ == "__main__":
     instance_handler = InstanceHandler(path_instances)
 
     n_processes = 12
-    time_limit_in_seconds = 60  # 60 seconds per batch
+    time_limit_in_seconds = 5*60  # 5 minutes per batch
     
     # Number of results to wait for before terminating remaining processes
     # If None, waits for all processes to complete
     n_results = 5
 
     seed = 42
-    n_jobs_list = [100]
+    n_jobs_list = [200]
     n_machines_list = [10, 15, 20, 25, 30, 40, 50, 60, 70, 80, 90, 100]
 
     instance_template : InstanceTemplate = lambda n_jobs, n_machines, s: UniformInstance(n_jobs, n_machines, 1, 1000, s)

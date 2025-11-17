@@ -79,6 +79,7 @@ class BranchAndBound:
         self.n_machines = None
         self.n_jobs = None
         self.LUB_argmin = None
+        self.LUB_nodes_explored = None
         self.verbose = None
         self.TOL = None
         self.MAX_NODES = None
@@ -142,8 +143,8 @@ class BranchAndBound:
                 i = min([k for k in range(self.n_machines)], key=lambda x: completion_times[x])
                 X_int[(j, i)] = 1
                 completion_times[i] += self.processing_times[j]
-
             return X_int, max(completion_times)
+        
         if self.rounding_rule == "first_machine":
             # Each fractional job is put on the first machine it was assigned to.
             for j in fractional_jobs:
@@ -153,12 +154,11 @@ class BranchAndBound:
                 completion_times[i] += self.processing_times[j]
                 for other_i in assigned_machines[1:]:
                     X_int[(j, other_i)] = 0
-
             return X_int, max(completion_times)
+        
         if self.rounding_rule == "best_matching":
             # The at most m fractional jobs are assigned in a matching such that the total makespan is minimal.
             # We iterate through all possible placements of the (<=m) fractional jobs on the m machines.
-
             best = None  # (permutation, makespan) for the best matching found so far
             if len(fractional_jobs) <= self.n_machines:
                 assignments = it.permutations(range(self.n_machines), len(fractional_jobs))
@@ -176,14 +176,12 @@ class BranchAndBound:
                         best = p, makespan
                 else:
                     best = p, makespan
-
             # Returning the best assignment
             p, makespan = best
             for ind in range(len(fractional_jobs)):
                 j = fractional_jobs[ind]
                 i = p[ind]
                 X_int[(j, i)] = 1
-
             return X_int, makespan
 
     def stopping_criterion(self):
@@ -204,10 +202,11 @@ class BranchAndBound:
         self.LLB = float("-inf")
         self.LUB = float("inf")
         self.LUB_argmin = None  # Minimization --> Upper bound --> Heuristic --> This is integer
+        self.LUB_nodes_explored = -1
 
         self.verbose = verbose
         self.TOL = 1e-6
-        self.MAX_NODES = 100_000
+        self.MAX_NODES = 1_000
 
         if self.profiling_mode == ProfilingMode.NO_PROFILING:
             self.profiling = None
@@ -264,6 +263,10 @@ class BranchAndBound:
                 print(f"Node LB: {parent_node.LB}, Node UB: {parent_node.UB}")
                 print(f"path of the node: {parent_node.fixed}")
 
+            if nodes_explored % 100 == 0:
+                current_time = time.strftime("%H:%M:%S")
+                print(f"[{current_time}] Nodes explored: {nodes_explored}, Current upper bound: {self.LUB}, Current lower bound: {self.LLB}", flush=True)
+
             # We create (at most) m+1 children.
             j = self.branching_variable(parent_node.X_frac)
 
@@ -295,6 +298,7 @@ class BranchAndBound:
                             print(f"\t!!! Improved global upper bound: {self.LUB} --> {UB} (by integrality)")
                         self.LUB = UB
                         self.LUB_argmin = {k: 1 for k in new_fixed}
+                        self.LUB_nodes_explored = nodes_explored
                     continue
 
                 # If we are here, there are still some free jobs left.
@@ -353,6 +357,7 @@ class BranchAndBound:
                         print(f"!!! Improved global upper bound: {old_ub} --> {UB}")
                     self.LUB = UB
                     self.LUB_argmin = X_int
+                    self.LUB_nodes_explored = nodes_explored
 
             """
             We have processed all m+1 children. The ones that are relevant are put back in the queue.
@@ -376,17 +381,18 @@ class BranchAndBound:
             if abs(self.LUB - opt) <= self.TOL and not_yet_opt:
                 nodes_opt = nodes_explored
                 not_yet_opt = False
+                break
 
             # We stop if the stopping criterion holds, or if we explored too many nodes.
             if nodes_explored > self.MAX_NODES:
-                if not_yet_opt:
-                    nodes_opt = nodes_explored
-                return self.LUB, self.LUB_argmin, self.LLB, time.time() - start, nodes_explored, nodes_opt, max_depth, False  # Terminating because of the number of nodes
+                # if not_yet_opt:
+                #     nodes_opt = nodes_explored
+                return self.LUB, self.LUB_argmin, self.LUB_nodes_explored, self.LLB, time.time() - start, nodes_explored, nodes_opt, max_depth, False  # Terminating because of the number of nodes
 
             if self.stopping_criterion():
-                if not_yet_opt:
-                    nodes_opt = nodes_explored
-                return self.LUB, self.LUB_argmin, self.LLB, time.time() - start, nodes_explored, nodes_opt, max_depth, True  # Terminating because of the stopping criterion
+                # if not_yet_opt:
+                #     nodes_opt = nodes_explored
+                return self.LUB, self.LUB_argmin, self.LUB_nodes_explored, self.LLB, time.time() - start, nodes_explored, nodes_opt, max_depth, True  # Terminating because of the stopping criterion
 
         """ 
         At this point, the queue is empty. 
@@ -395,4 +401,4 @@ class BranchAndBound:
         if not_yet_opt:
             nodes_opt = nodes_explored
 
-        return self.LUB, self.LUB_argmin, self.LLB, time.time() - start, nodes_explored, nodes_opt, max_depth, True
+        return self.LUB, self.LUB_argmin, self.LUB_nodes_explored, self.LLB, time.time() - start, nodes_explored, nodes_opt, max_depth, True
