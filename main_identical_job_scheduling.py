@@ -5,10 +5,7 @@ from datetime import datetime
 import numpy as np
 
 def opt_gap(tol=1e-6):
-    if OPT_exact is None:
-        return None
-    else:
-        return abs(best_solution - OPT_exact) / max(tol, OPT_exact, best_solution)
+    return abs(best_solution - OPT_exact) / max(tol, OPT_exact, best_solution)
 
 def validate_solution():
     assigned_jobs = {}  # maps job -> machine
@@ -37,93 +34,27 @@ def validate_solution():
     # Allow a small numerical tolerance when comparing floats
     assert np.isclose(computed_makespan, float(best_solution), rtol=1e-6, atol=1e-8), f"Computed makespan {computed_makespan} does not match reported best_solution {best_solution}"
 
-    if OPT_exact is not None:
-        assert round(best_solution) >= round(OPT_exact), "Our solution cannot be better than the optimal"
+    assert round(best_solution) >= round(OPT_exact), "Our solution cannot be better than the optimal"
 
 
 # Modify this to test different instances
-instances : list[InstanceTemplate] = [
-    # UniformInstance(100, 20, 1, 99, 45),
-    # SmallBigInstance(900, 1, 9, 100, 80, 99, 150, 63),
-    UniformInstance(50, 25, 1, 1000, 42),
-    UniformInstance(50, 25, 1, 1000, 43),
-    UniformInstance(50, 25, 1, 1000, 44),
-    UniformInstance(50, 25, 1, 1000, 45),
-    UniformInstance(50, 25, 1, 1000, 46),
-    UniformInstance(50, 25, 1, 1000, 47),
-    UniformInstance(50, 25, 1, 1000, 48),
-    UniformInstance(50, 25, 1, 1000, 49),
-    UniformInstance(50, 25, 1, 1000, 50),
-    UniformInstance(50, 25, 1, 1000, 51),
-    UniformInstance(100, 50, 1, 1000, 42),
-    UniformInstance(100, 50, 1, 1000, 43),
-    UniformInstance(100, 50, 1, 1000, 44),
-    UniformInstance(100, 50, 1, 1000, 45),
-    UniformInstance(100, 50, 1, 1000, 46),
-    UniformInstance(100, 50, 1, 1000, 47),
-    UniformInstance(100, 50, 1, 1000, 48),
-    UniformInstance(100, 50, 1, 1000, 49),
-    UniformInstance(100, 50, 1, 1000, 50),
-    UniformInstance(100, 50, 1, 1000, 51),
-    UniformInstance(200, 100, 1, 1000, 42),
-    UniformInstance(200, 100, 1, 1000, 43),
-    UniformInstance(200, 100, 1, 1000, 44),
-    UniformInstance(200, 100, 1, 1000, 45),
-    UniformInstance(200, 100, 1, 1000, 46),
-    UniformInstance(200, 100, 1, 1000, 47),
-    UniformInstance(200, 100, 1, 1000, 48),
-    UniformInstance(200, 100, 1, 1000, 49),
-    UniformInstance(200, 100, 1, 1000, 50),
-    UniformInstance(200, 100, 1, 1000, 51),
-    # UniformInstance(300, 150, 1, 1000, 42),
-    # UniformInstance(300, 150, 1, 1000, 43),
-    # UniformInstance(300, 150, 1, 1000, 44),
-    # UniformInstance(300, 150, 1, 1000, 45),
-    # UniformInstance(300, 150, 1, 1000, 46),
-    # UniformInstance(300, 150, 1, 1000, 47),
-    # UniformInstance(300, 150, 1, 1000, 48),
-    # UniformInstance(300, 150, 1, 1000, 49),
-    # UniformInstance(300, 150, 1, 1000, 50),
-    # UniformInstance(300, 150, 1, 1000, 51),
-    # UniformInstance(400, 200, 1, 1000, 42),
-    # UniformInstance(400, 200, 1, 1000, 43),
-    # UniformInstance(400, 200, 1, 1000, 44),
-    # UniformInstance(400, 200, 1, 1000, 45),
-    # UniformInstance(400, 200, 1, 1000, 46),
-    # UniformInstance(400, 200, 1, 1000, 47),
-    # UniformInstance(400, 200, 1, 1000, 48),
-    # UniformInstance(400, 200, 1, 1000, 49),
-    # UniformInstance(400, 200, 1, 1000, 50),
-    # UniformInstance(400, 200, 1, 1000, 51),
-    # UniformInstance(500, 250, 1, 1000, 42),
-    # UniformInstance(500, 250, 1, 1000, 43),
-    # UniformInstance(500, 250, 1, 1000, 44),
-    # UniformInstance(500, 250, 1, 1000, 45),
-    # UniformInstance(500, 250, 1, 1000, 46),
-    # UniformInstance(500, 250, 1, 1000, 47),
-    # UniformInstance(500, 250, 1, 1000, 48),
-    # UniformInstance(500, 250, 1, 1000, 49),
-    # UniformInstance(500, 250, 1, 1000, 50),
-    # UniformInstance(500, 250, 1, 1000, 51),
-    # UniformInstance(1000, 500, 1, 1000, 42),
-    # UniformInstance(1000, 500, 1, 1000, 43),
-    # UniformInstance(1000, 500, 1, 1000, 44),
-    # UniformInstance(1000, 500, 1, 1000, 45),
-    # UniformInstance(1000, 500, 1, 1000, 46),
-    # UniformInstance(1000, 500, 1, 1000, 47),
-    # UniformInstance(1000, 500, 1, 1000, 48),
-    # UniformInstance(1000, 500, 1, 1000, 49),
-    # UniformInstance(1000, 500, 1, 1000, 50),
-    # UniformInstance(1000, 500, 1, 1000, 51),
-]
+# instances : list[InstanceTemplate] = [
+#     # UniformInstance(100, 20, 1, 99, 45),
+#     # SmallBigInstance(900, 1, 9, 100, 80, 99, 150, 63),
+#     UniformInstance(100, 10, 1, 1000, 42),
+# ]
 
-compute_exact_solutions = False
+# solver = lambda n_jobs, n_machines, processing_times: (max(max(processing_times), sum(processing_times)/n_machines), None, None, None)
+solver = lambda n_jobs, n_machines, processing_times: (sum(processing_times)/n_machines, None, None, None)
 
-epsilons = [0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1]
+instances = pd.Series([UniformInstance(200, n_machines, 1, 1000, 42) for n_machines in np.arange(75, 200, 25)])
+instances.apply(lambda instance: instance.set_solver(solver))
+
+epsilons = [0.01]
 
 tests_item = lambda epsilon: [
     {
-        "epsilon": (lambda e: e**2+2*e)(epsilon),
+        "epsilon": (lambda e: 2*e)(epsilon),
         "profiling_mode": ProfilingMode.NO_PROFILING,
         "node_selection": "lowest_lower_bound",
         "lower_bound": "greedy",
@@ -153,7 +84,7 @@ instance_handler = InstanceHandler(path_instances)
 
 # Create a pandas data frame to store the results
 df = pd.DataFrame(columns=["instance", "epsilon_range", "n_machines", "n_jobs", "epsilon", "branching_rule", "node_selection", "profiling_mode", "rounding_rule", "lower_bound",
-                           "best_solution", "nodes_to_best_solution", "best_bound", "runtime", "depth", "nodes_explored", "terminate",
+                           "best_solution", "nodes_to_best_solution", "best_bound", "runtime", "depth", "nodes_explored", "nodes_best", "terminate",
                            "number_of_nodes_for_optimality", "optimal_solution", "opt_gap"])
 
 for instance in instances:
@@ -186,7 +117,7 @@ for instance in instances:
 
         df = df._append({"instance": str(instance), "epsilon_range": epsilon_range_str, "n_jobs": n_jobs, "n_machines": n_machines, "epsilon": epsilon,
         "branching_rule": branching_rule, "node_selection": node_selection_strategy, "profiling_mode": profiling_mode.name, "rounding_rule": rounding_rule, "lower_bound": lower_bound,
-        "best_solution": best_solution, "nodes_to_best_solution": nodes_to_best_solution, "best_bound": LB, "runtime": runtime, "depth": max_depth, "nodes_explored": nodes_explored, "terminate": terminate,
+        "best_solution": best_solution, "nodes_to_best_solution": nodes_to_best_solution, "best_bound": LB, "runtime": runtime, "depth": max_depth, "nodes_explored": nodes_explored, "nodes_best": nodes_best, "terminate": terminate,
         "number_of_nodes_for_optimality": nodes_opt, "optimal_solution": OPT_exact, "opt_gap": opt_gap()},
         ignore_index=True)
 

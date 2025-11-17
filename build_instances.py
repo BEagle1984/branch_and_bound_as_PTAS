@@ -1,3 +1,4 @@
+from typing import Callable
 from multiprocessing.pool import Pool
 import multiprocessing
 import threading
@@ -14,7 +15,9 @@ class InstanceTemplate:
         self.n_jobs = n_jobs
         self.n_machines = n_machines
         self.processing_times = []
-        self.makespan = None
+        self.makespan = 0.0
+
+        self._solver = solve_identical_job_scheduling
 
         self._filename_prefix = "Instance"
         self._filename_infix = ""
@@ -29,23 +32,22 @@ class InstanceTemplate:
         self.processing_times = processing_times
         self.makespan = makespan
 
+    def set_solver(self, solver: Callable[[int, int, list[int]], tuple[any, any, any, any]]) -> None:
+        self._solver = solver
+
     def filename_template(self) -> str:
         return f"{self._filename_prefix}{'_' if self._filename_infix else ''}{self._filename_infix}_{self._filename_suffix}"
 
     def filename(self) -> str:
         raise NotImplementedError("This method should be implemented by subclasses.")
 
-    def generate(self) -> None:
-        self._generate()
-        self.makespan = sum(self.processing_times) / self.n_machines
-
     def _generate(self) -> None:
         raise NotImplementedError("This method should be implemented by subclasses.")
     
     def solve(self) -> tuple[int, int, list[int], float]:
         if self.processing_times is None or not self.processing_times:
-            self.generate()
-        self.makespan, _, _, _ = solve_identical_job_scheduling(self.n_jobs, self.n_machines, self.processing_times)
+            self._generate()
+        self.makespan, _, _, _ = self._solver(self.n_jobs, self.n_machines, self.processing_times)
         return self.get()
 
     def __str__(self):
@@ -104,7 +106,7 @@ class SmallBigInstance(InstanceTemplate):
     def filename(self) -> str:
         return self.filename_template().format(n_sj=self.n_sj, lb_sj=self.lb_sj, ub_sj=self.ub_sj, n_bj=self.n_bj, lb_bj=self.lb_bj, ub_bj=self.ub_bj, seed=self.seed, n_jobs=self.n_jobs, n_machines=self.n_machines)
 
-    def generate(self) -> None:
+    def _generate(self) -> None:
         if self.seed is not None:
             np.random.seed(self.seed)
         array_sj = np.random.randint(self.lb_sj, self.ub_sj + 1, self.n_sj)
@@ -118,7 +120,7 @@ class InstanceHandler:
         self.path = path
         os.makedirs(self.path, exist_ok=True)
 
-    def fetch(self, instance: InstanceTemplate, solve_exact: bool = False, verbose: bool = False) -> tuple[int, int, list[int], float]:
+    def fetch(self, instance: InstanceTemplate, verbose: bool = False) -> tuple[int, int, list[int], float]:
         """
         Fetch an instance with the specified number of jobs and machines.
         If the instance exists, load it from file. Otherwise, create a new instance.
@@ -138,14 +140,10 @@ class InstanceHandler:
             if verbose:
                 print("Instance found, loading from file")
             self._load(instance, verbose)
-        elif solve_exact:
-            if verbose:
-                print("Instance not found, generating new instance")
-            self._solve_and_save(instance, verbose)
         else:
             if verbose:
                 print("Instance not found, generating new instance")
-            instance.generate()
+            self._solve_and_save(instance, verbose)
         return instance.get()
 
     def _exists(self, instance: InstanceTemplate, verbose: bool = False) -> bool:
@@ -233,14 +231,14 @@ if __name__ == "__main__":
     instance_handler = InstanceHandler(path_instances)
 
     n_processes = 12
-    time_limit_in_seconds = 60  # 60 seconds per batch
+    time_limit_in_seconds = 5*60  # 5 minutes per batch
     
     # Number of results to wait for before terminating remaining processes
     # If None, waits for all processes to complete
     n_results = 5
 
     seed = 42
-    n_jobs_list = [100]
+    n_jobs_list = [200]
     n_machines_list = [10, 15, 20, 25, 30, 40, 50, 60, 70, 80, 90, 100]
 
     instance_template : InstanceTemplate = lambda n_jobs, n_machines, s: UniformInstance(n_jobs, n_machines, 1, 1000, s)
