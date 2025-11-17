@@ -2,6 +2,7 @@ import pandas as pd
 from build_instances import InstanceHandler, InstanceTemplate, SmallBigInstance, UniformInstance
 from BeB.identical_job_scheduling import BranchAndBound, ProfilingMode
 from datetime import datetime
+from exact_models.identical_job_scheduling import solve_identical_job_scheduling
 import numpy as np
 
 def opt_gap(tol=1e-6):
@@ -45,9 +46,10 @@ def validate_solution():
 # ]
 
 # solver = lambda n_jobs, n_machines, processing_times: (max(max(processing_times), sum(processing_times)/n_machines), None, None, None)
-solver = lambda n_jobs, n_machines, processing_times: (sum(processing_times)/n_machines, None, None, None)
+# solver = lambda n_jobs, n_machines, processing_times: (sum(processing_times)/n_machines, None, None, None)
+solver = lambda n_jobs, n_machines, processing_times: solve_identical_job_scheduling(n_jobs, n_machines, processing_times, timeout_minutes=1, verbose=False)
 
-instances = pd.Series([UniformInstance(200, n_machines, 1, 1000, 42) for n_machines in np.arange(75, 200, 25)])
+instances = pd.Series([UniformInstance(200, n_machines, 1, 1000, 99) for n_machines in np.arange(75, 200, 25)])
 instances.apply(lambda instance: instance.set_solver(solver))
 
 epsilons = [0.01]
@@ -84,11 +86,11 @@ instance_handler = InstanceHandler(path_instances)
 
 # Create a pandas data frame to store the results
 df = pd.DataFrame(columns=["instance", "epsilon_range", "n_machines", "n_jobs", "epsilon", "branching_rule", "node_selection", "profiling_mode", "rounding_rule", "lower_bound",
-                           "best_solution", "nodes_to_best_solution", "best_bound", "runtime", "depth", "nodes_explored", "nodes_best", "terminate",
-                           "number_of_nodes_for_optimality", "optimal_solution", "opt_gap"])
+                           "best_solution", "nodes_to_best_solution", "nodes_explored", "runtime", "opt_gap", "terminate", "best_bound", "depth",
+                           "number_of_nodes_for_optimality", "optimal_solution"])
 
 for instance in instances:
-    n_jobs, n_machines, processing_times, OPT_exact = instance_handler.fetch(instance, compute_exact_solutions, verbose=True)
+    n_jobs, n_machines, processing_times, OPT_exact = instance_handler.fetch(instance, verbose=True)
 
     OPT=max(max(processing_times), sum(processing_times)/n_machines)
     normalized_processing_times = [p/OPT for p in processing_times]
@@ -117,7 +119,7 @@ for instance in instances:
 
         df = df._append({"instance": str(instance), "epsilon_range": epsilon_range_str, "n_jobs": n_jobs, "n_machines": n_machines, "epsilon": epsilon,
         "branching_rule": branching_rule, "node_selection": node_selection_strategy, "profiling_mode": profiling_mode.name, "rounding_rule": rounding_rule, "lower_bound": lower_bound,
-        "best_solution": best_solution, "nodes_to_best_solution": nodes_to_best_solution, "best_bound": LB, "runtime": runtime, "depth": max_depth, "nodes_explored": nodes_explored, "nodes_best": nodes_best, "terminate": terminate,
+        "best_solution": best_solution, "nodes_to_best_solution": nodes_to_best_solution, "best_bound": LB, "runtime": runtime, "depth": max_depth, "nodes_explored": nodes_explored, "terminate": terminate,
         "number_of_nodes_for_optimality": nodes_opt, "optimal_solution": OPT_exact, "opt_gap": opt_gap()},
         ignore_index=True)
 

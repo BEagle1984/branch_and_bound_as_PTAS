@@ -2,7 +2,7 @@ from ortools.linear_solver import pywraplp
 from pyscipopt import Model
 
 
-def solve_identical_job_scheduling(n_jobs: int, n_machines: int, processing_times: list[int], verbose=False):
+def solve_identical_job_scheduling(n_jobs: int, n_machines: int, processing_times: list[int], timeout_minutes: int=None, verbose=False):
     """
         Solves the Identical Job Scheduling problem using OR-Tools with SCIP backend.
 
@@ -42,8 +42,9 @@ def solve_identical_job_scheduling(n_jobs: int, n_machines: int, processing_time
     for i in range(n_machines):
         solver.Add(solver.Sum(processing_times[j] * x[j, i] for j in range(n_jobs)) <= C_max)
 
-    # Sets a time limit of 60 seconds.
-    solver.SetTimeLimit(5*60000)  # Time limit in milliseconds
+    # Sets the time limit
+    if timeout_minutes is not None:
+        solver.SetTimeLimit(timeout_minutes * 60_000)
 
     # Solve the problem
     status = solver.Solve()
@@ -51,23 +52,16 @@ def solve_identical_job_scheduling(n_jobs: int, n_machines: int, processing_time
     # Get the final runtime
     runtime = solver.wall_time()
 
-    if status == pywraplp.Solver.OPTIMAL:
-        if verbose:
+    if verbose:
+        if status == pywraplp.Solver.OPTIMAL:
             print('Optimal solution found!')
-        makespan = solver.Objective().Value()
-        assignment = {}
-        for i in range(n_jobs):
-            for j in range(n_machines):
-                if x[i, j].solution_value() > 0.5:
-                    assignment[(i, j)] = 1
-        return makespan, assignment, status, runtime
-    else:
-        print('No optimal solution found.')
-        # Return the best solution found so far
-        makespan = solver.Objective().Value()
-        assignment = {}
-        for i in range(n_jobs):
-            for j in range(n_machines):
-                if x[i, j].solution_value() > 0.5:
-                    assignment[(i, j)] = 1
-        return makespan, assignment, status, runtime
+        else:
+            print('No optimal solution found.')
+
+    makespan = solver.Objective().Value()
+    assignment = {}
+    for i in range(n_jobs):
+        for j in range(n_machines):
+            if x[i, j].solution_value() > 0.5:
+                assignment[(i, j)] = 1
+    return makespan, assignment, status, runtime
