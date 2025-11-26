@@ -80,6 +80,7 @@ tests_list : list[dict] = [test for epsilon in epsilons for test in tests_item(e
 test_problem = "identical_job_scheduling"
 test_type = "random_instances"
 timestamp = datetime.now().isoformat('#','seconds').replace(":", "")
+timestamp = datetime.now().isoformat('#','seconds').replace(":", "")
 
 # Instance handler
 path_instances = "instances/identical_job_scheduling/"
@@ -124,6 +125,8 @@ for instance in instances:
         "number_of_nodes_for_optimality": nodes_opt, "optimal_solution": OPT_exact, "opt_gap": opt_gap()},
         ignore_index=True)
 
+    # Logging
+    print(f"Done with instance {instance}", flush=True)
     # Logging
     print(f"Done with instance {instance}", flush=True)
 
