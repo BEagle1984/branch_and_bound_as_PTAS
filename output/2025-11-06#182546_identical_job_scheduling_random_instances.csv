@@ -1,0 +1,2 @@
+instance,epsilon_range,n_machines,n_jobs,epsilon,branching_rule,node_selection,profiling_mode,rounding_rule,lower_bound,best_solution,best_bound,runtime,depth,nodes_explored,terminate,number_of_nodes_for_optimality,optimal_solution,opt_gap
+Uniform1-1000_Seed42_J100_M10,"[0.000421, 0.205565]",10,100,0.1,max_proc,lowest_lower_bound,NO_PROFILING,all_to_shortest,greedy,5017,4747.9,0.0037915706634521484,0,2,True,2,4748.0,0.053617699820609925

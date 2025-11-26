@@ -1,0 +1,11 @@
+instance,epsilon_range,n_machines,n_jobs,epsilon,branching_rule,node_selection,profiling_mode,rounding_rule,lower_bound,best_solution,best_bound,runtime,depth,nodes_explored,terminate,number_of_nodes_for_optimality,optimal_solution,opt_gap
+Uniform1-1000_Seed42_J100_M10,"[0.000421, 0.205565]",10,100,0.010025000000000001,max_proc,lowest_lower_bound,NO_PROFILING,all_to_shortest,greedy,4794,4747.9,0.1260850429534912,61,63,True,63,4748.0,0.009595327492699207
+Uniform1-1000_Seed42_J100_M10,"[0.000421, 0.205565]",10,100,0.005,max_proc,lowest_lower_bound,PRUNE,all_to_shortest,greedy,4795,4747.9,0.17345285415649414,72,74,True,74,4748.0,0.009801876955161626
+Uniform1-1000_Seed42_J100_M10,"[0.000421, 0.205565]",10,100,0.0816,max_proc,lowest_lower_bound,NO_PROFILING,all_to_shortest,greedy,5017,4747.9,0.0,0,2,True,2,4748.0,0.053617699820609925
+Uniform1-1000_Seed42_J100_M10,"[0.000421, 0.205565]",10,100,0.04,max_proc,lowest_lower_bound,PRUNE,all_to_shortest,greedy,5017,4747.9,0.0013523101806640625,0,2,True,2,4748.0,0.053617699820609925
+Uniform1-1000_Seed42_J100_M10,"[0.000421, 0.205565]",10,100,0.1236,max_proc,lowest_lower_bound,NO_PROFILING,all_to_shortest,greedy,5017,4747.9,0.001508474349975586,0,2,True,2,4748.0,0.053617699820609925
+Uniform1-1000_Seed42_J100_M10,"[0.000421, 0.205565]",10,100,0.06,max_proc,lowest_lower_bound,PRUNE,all_to_shortest,greedy,5017,4747.9,0.0012488365173339844,0,2,True,2,4748.0,0.053617699820609925
+Uniform1-1000_Seed42_J100_M10,"[0.000421, 0.205565]",10,100,0.1664,max_proc,lowest_lower_bound,NO_PROFILING,all_to_shortest,greedy,5017,4747.9,0.0020062923431396484,0,2,True,2,4748.0,0.053617699820609925
+Uniform1-1000_Seed42_J100_M10,"[0.000421, 0.205565]",10,100,0.08,max_proc,lowest_lower_bound,PRUNE,all_to_shortest,greedy,5017,4747.9,0.0037848949432373047,0,2,True,2,4748.0,0.053617699820609925
+Uniform1-1000_Seed42_J100_M10,"[0.000421, 0.205565]",10,100,0.21000000000000002,max_proc,lowest_lower_bound,NO_PROFILING,all_to_shortest,greedy,5017,4747.9,0.004416465759277344,0,2,True,2,4748.0,0.053617699820609925
+Uniform1-1000_Seed42_J100_M10,"[0.000421, 0.205565]",10,100,0.1,max_proc,lowest_lower_bound,PRUNE,all_to_shortest,greedy,5017,4747.9,0.004267215728759766,0,2,True,2,4748.0,0.053617699820609925
