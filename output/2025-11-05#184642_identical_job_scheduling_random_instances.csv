@@ -1,0 +1,3 @@
+instance,epsilon_range,n_machines,n_jobs,epsilon,branching_rule,node_selection,profiling_mode,rounding_rule,lower_bound,best_solution,best_bound,runtime,depth,nodes_explored,terminate,number_of_nodes_for_optimality,optimal_solution,opt_gap
+900Small1-9_100Large80-99_Seed63_J1000_M150,"[0.010101, 1.000000]",150,1000,0.0816,max_proc,lowest_lower_bound,NO_PROFILING,all_to_shortest,greedy,99,99,52.22520327568054,99,101,True,101,99.0,0.0
+900Small1-9_100Large80-99_Seed63_J1000_M150,"[0.010101, 1.000000]",150,1000,0.04,max_proc,lowest_lower_bound,PRUNE,all_to_shortest,greedy,99,99,52.1422164440155,99,101,True,101,99.0,0.0

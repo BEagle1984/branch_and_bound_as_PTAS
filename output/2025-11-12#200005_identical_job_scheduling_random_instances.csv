@@ -1,0 +1,9 @@
+instance,epsilon_range,n_machines,n_jobs,epsilon,branching_rule,node_selection,profiling_mode,rounding_rule,lower_bound,best_solution,best_bound,runtime,depth,nodes_explored,nodes_best,terminate,number_of_nodes_for_optimality,optimal_solution,opt_gap
+Uniform1-1000_Seed42_J1000_M10,"[0.000020, 0.019785]",10,1000,0.02,max_proc,lowest_lower_bound,NO_PROFILING,all_to_shortest,greedy,50778,50492.9,0.015557527542114258,0,2,,True,-1,50497.0,0.005533892630666825
+Uniform1-1000_Seed42_J1000_M10,"[0.000020, 0.019785]",10,1000,0.01,max_proc,lowest_lower_bound,PRUNE,all_to_shortest,greedy,50778,50492.9,0.014902830123901367,0,2,,True,-1,50497.0,0.005533892630666825
+Uniform1-1000_Seed42_J1000_M20,"[0.000040, 0.039570]",20,1000,0.02,max_proc,lowest_lower_bound,NO_PROFILING,all_to_shortest,greedy,25646,25246.45,0.02927112579345703,0,2,2,True,-1,25260.0,0.01505108009046245
+Uniform1-1000_Seed42_J1000_M20,"[0.000040, 0.039570]",20,1000,0.01,max_proc,lowest_lower_bound,PRUNE,all_to_shortest,greedy,25702,25246.45,0.04029440879821777,0,2,,True,-1,25260.0,0.017197105283635515
+Uniform1-1000_Seed42_J1000_M30,"[0.000059, 0.059355]",30,1000,0.02,max_proc,lowest_lower_bound,NO_PROFILING,all_to_shortest,greedy,17141,16830.966666666667,0.989408016204834,17,19,19,True,-1,17018.0,0.007175777375882387
+Uniform1-1000_Seed42_J1000_M30,"[0.000059, 0.059355]",30,1000,0.01,max_proc,lowest_lower_bound,PRUNE,all_to_shortest,greedy,17148,16830.966666666667,3.9487955570220947,54,56,56,True,-1,17018.0,0.0075810590156286444
+Uniform1-1000_Seed42_J1000_M40,"[0.000079, 0.079140]",40,1000,0.02,max_proc,lowest_lower_bound,NO_PROFILING,all_to_shortest,greedy,12875,12623.225,42.71898031234741,204,206,206,True,-1,12793.0,0.006368932038834952
+Uniform1-1000_Seed42_J1000_M40,"[0.000079, 0.079140]",40,1000,0.01,max_proc,lowest_lower_bound,PRUNE,all_to_shortest,greedy,12848,12623.225,38.72321629524231,189,191,191,True,-1,12793.0,0.004280821917808219

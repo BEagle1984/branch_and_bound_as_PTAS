@@ -1,0 +1,3 @@
+instance,epsilon_range,n_machines,n_jobs,epsilon,branching_rule,node_selection,profiling_mode,rounding_rule,lower_bound,best_solution,best_bound,runtime,depth,nodes_explored,terminate,number_of_nodes_for_optimality,optimal_solution,opt_gap
+Uniform1-99_Seed45_J100_M20,"[0.012024, 0.396794]",20,100,0.1,max_proc,lowest_lower_bound,NO_PROFILING,all_to_shortest,greedy,273,249.5,0.05403399467468262,11,13,True,13,250.0,0.08424908424908426
+Uniform1-99_Seed45_J100_M20,"[0.012024, 0.396794]",20,100,0.05,max_proc,lowest_lower_bound,PRUNE,all_to_shortest,greedy,274,249.5,0.11037921905517578,22,24,True,24,250.0,0.08759124087591241
