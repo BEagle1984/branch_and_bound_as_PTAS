@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 instance,epsilon_range,n_machines,n_jobs,epsilon,branching_rule,node_selection,profiling_mode,rounding_rule,lower_bound,best_solution,nodes_to_best_solution,nodes_explored,runtime,opt_gap,terminate,best_bound,depth,number_of_nodes_for_optimality,optimal_solution
 Uniform1-5000_Seed1_J25_M10,"[0.025332, 0.832460]",10,25,0.02,max_proc,lowest_lower_bound,NO_PROFILING,all_to_shortest,greedy,6180,107,2001,1.1555426120758057,0.07378640776699029,False,5724.0,11,-1,5724.0
 Uniform1-5000_Seed1_J25_M10,"[0.025332, 0.832460]",10,25,0.01,max_proc,lowest_lower_bound,PRUNE,all_to_shortest,greedy,5980,48,48,0.02412247657775879,0.04280936454849498,True,5980.0,15,-1,5724.0
@@ -195,3 +196,8 @@ Uniform1-5000_Seed1_J500_M200,"[0.002608, 0.814811]",200,500,0.02,max_proc,lowes
 Uniform1-5000_Seed1_J500_M200,"[0.002608, 0.814811]",200,500,0.01,max_proc,lowest_lower_bound,PRUNE,all_to_shortest,greedy,6733,623,2001,2630.973438024521,0.08897371156987975,False,6133.94,400,-1,6133.94
 Uniform1-5000_Seed7_J500_M200,"[0.000964, 0.801822]",200,500,0.02,max_proc,lowest_lower_bound,NO_PROFILING,all_to_shortest,greedy,6484,1499,2001,2295.729131937027,0.03962523133867987,False,6227.07,452,-1,6227.07
 Uniform1-5000_Seed7_J500_M200,"[0.000964, 0.801822]",200,500,0.01,max_proc,lowest_lower_bound,PRUNE,all_to_shortest,greedy,6957,1303,2001,2665.5294873714447,0.10492022423458391,False,6227.07,400,-1,6227.07
+=======
+instance,epsilon_range,n_machines,n_jobs,epsilon,branching_rule,node_selection,profiling_mode,rounding_rule,lower_bound,best_solution,best_bound,runtime,depth,nodes_explored,nodes_best,terminate,number_of_nodes_for_optimality,optimal_solution,opt_gap
+Uniform1-1000_Seed42_J200_M25,"[0.000508, 0.253203]",25,200,0.02,max_proc,lowest_lower_bound,NO_PROFILING,all_to_shortest,greedy,4008,3933.6,2.333808422088623,140,142,142,True,-1,3933.6,0.018562874251497028
+Uniform1-1000_Seed42_J200_M25,"[0.000508, 0.253203]",25,200,0.01,max_proc,lowest_lower_bound,PRUNE,all_to_shortest,greedy,4007,3933.6,2.7578656673431396,151,153,153,True,-1,3933.6,0.018317943598702292
+>>>>>>> 168fbc1a5697b378833155d557a10d58c489f221
