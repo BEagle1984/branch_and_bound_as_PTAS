@@ -1,0 +1,59 @@
+%% Esempio per lo stile supsi
+\documentclass[twoside]{supsistudent}
+
+\input{config/custom}
+
+% per settare noindent
+\setlength{\parindent}{0pt}
+
+
+% Crea un capitolo senza numerazione che pero` appare nell'indice %
+\newcommand{\problemchapter}[1]{%
+  \chapter*{#1}%
+  \addcontentsline{toc}{chapter}{#1}%
+\markboth{#1}{#1}
+}
+
+% Numerazione delle appendici secondo norma
+\addto\appendix{
+\renewcommand{\thesection}{\Alph{chapter}.\arabic{section}}
+\renewcommand{\thesubsection}{\thesection.\arabic{subsection}}}
+
+\setcounter{secnumdepth}{5} 	%per avere più livelli nei titoli
+\setcounter{tocdepth}{5}		%per avere più livelli nell'indice
+
+
+\titolo{Branch and Bound as PTAS}
+\studente{Tiziano Zamaroni \vspace{1em}\\ Sergio Aquilini}
+\relatore{Monaldo Mastrolilli}
+\correlatore{-}
+\committente{SUPSI}
+\corso{C-P6051P - Seminari di Progetto}
+\modulo{M-P6050P - Progetto di Semestre}
+\anno{2025}
+
+\begin{document}
+
+\pagenumbering{alph}
+\maketitle
+\onehalfspacing
+\frontmatter
+
+
+\pagenumbering{roman}
+\tableofcontents
+\listoffigures					% Opzionale
+\listoftables					% Opzionale
+
+\newpage
+\mainmatter
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+\input{sections/1. introduzione/introduzione}
+
+\input{sections/7. conclusione/conclusione}
+
+\bibliographystyle{unsrt}
+\bibliography{bibliografia}
+\end{document}
