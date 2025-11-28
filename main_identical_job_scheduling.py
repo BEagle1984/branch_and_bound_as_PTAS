@@ -45,11 +45,8 @@ def validate_solution():
 #     UniformInstance(100, 10, 1, 1000, 42),
 # ]
 
-# solver = lambda n_jobs, n_machines, processing_times: (max(max(processing_times), sum(processing_times)/n_machines), None, None, None)
-# solver = lambda n_jobs, n_machines, processing_times: (sum(processing_times)/n_machines, None, None, None)
-solver = lambda n_jobs, n_machines, processing_times: solve_identical_job_scheduling(n_jobs, n_machines, processing_times, timeout_minutes=1, verbose=False)
-
-instances = pd.Series([UniformInstance(200, n_machines, 1, 1000, 99) for n_machines in np.arange(75, 200, 25)])
+solver = lambda n_jobs, n_machines, processing_times: (max(max(processing_times), sum(processing_times)/n_machines), None, None, None)
+instances = pd.Series([UniformInstance(2 * n_machines, n_machines, 1, 5000, seed) for n_machines in [10, 25, 50, 75, 100] for seed in range(161, 201)])
 instances.apply(lambda instance: instance.set_solver(solver))
 
 epsilons = [0.01]
@@ -90,13 +87,13 @@ df = pd.DataFrame(columns=["instance", "epsilon_range", "n_machines", "n_jobs", 
                            "number_of_nodes_for_optimality", "optimal_solution"])
 
 for instance in instances:
-    n_jobs, n_machines, processing_times, OPT_exact = instance_handler.fetch(instance, verbose=True)
+    n_jobs, n_machines, processing_times, OPT_exact = instance_handler.fetch(instance, verbose=False)
 
     OPT=max(max(processing_times), sum(processing_times)/n_machines)
     normalized_processing_times = [p/OPT for p in processing_times]
     epsilon_range_str = f"[{min(normalized_processing_times):0.6f}, {max(normalized_processing_times):0.6f}]"
 
-    print(f"Starting with {instance}", flush=True)
+    print(f"\nStarting with {instance} (opt={OPT_exact })", flush=True)
 
     for test in tests_list:
         epsilon = test["epsilon"]
@@ -111,7 +108,7 @@ for instance in instances:
 
         beb = BranchAndBound(node_selection_strategy, profiling_mode, lower_bound, branching_rule, rounding_rule, epsilon)
 
-        best_solution, X_int, nodes_to_best_solution, LB, runtime, nodes_explored, nodes_opt, max_depth, terminate = beb.solve(n_jobs, n_machines, processing_times, verbose=False, opt=OPT_exact)
+        best_solution, X_int, nodes_to_best_solution, LB, runtime, nodes_explored, nodes_opt, max_depth, terminate = beb.solve(n_jobs, n_machines, processing_times, verbose=0, opt=OPT_exact)
 
         print(f"\tBest solution: {best_solution}, Nodes explored: {nodes_explored}, Nodes to best solution: {nodes_to_best_solution}, Runtime: {runtime:.2f}s", flush=True)
 
