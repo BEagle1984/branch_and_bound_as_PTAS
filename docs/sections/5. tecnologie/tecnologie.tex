@@ -2,4 +2,12 @@
 
 \section{Implementazione algoritmi}
 
+L’implementazione degli algoritmi è stata sviluppata in \emph{Python} a partire dal codice fornito dagli autori del paper~\cite{bb-ptas}, originariamente progettato per il caso delle \emph{unrelated machines}. In tale versione, il lower bound dei nodi del Branch-and-Bound veniva calcolato tramite il solver \emph{SCIP}~\cite{scip}, utilizzato attraverso la libreria \emph{PySCIPOpt}. Questa scelta, appropriata per il problema generale, consente agli autori di ottenere bound frazionari mediante \emph{binary search} e \emph{linear relaxation}.
+
+Nel nostro progetto, tuttavia, tale approccio si è rivelato eccessivamente oneroso e non strettamente necessario. Nel caso delle \emph{identical machines}, infatti, la struttura del problema è significativamente più semplice e permette l’impiego di metodi più leggeri per il calcolo del lower bound. Inoltre, l’utilizzo di \emph{SCIP}~\cite{scip} presentava un ulteriore limite pratico: non è stato possibile forzare il solver a utilizzare sistematicamente il metodo \emph{primal simplex}, condizione necessaria per garantire che il numero di variabili frazionarie nella soluzione LP rimanesse inferiore o uguale al numero di macchine. L’assenza di tale garanzia comprometteva l’affidabilità della fase di arrotondamento e introduceva un overhead computazionale non trascurabile.
+
+Per queste ragioni, abbiamo sostituito integralmente l’utilizzo di \emph{SCIP}~\cite{scip} con un metodo di calcolo del lower bound basato su un criterio \emph{greedy}, pienamente sufficiente per il caso delle identical machines e decisamente più efficiente dal punto di vista computazionale. Questa scelta ha permesso di ridurre drasticamente il tempo di elaborazione dei nodi del Branch-and-Bound, mantenendo comunque una qualità del bound adeguata agli scopi del progetto.
+
 \section{Analisi dei dati}
+
+L’analisi dei dati sperimentali è stata effettuata in Python utilizzando le principali librerie per la data science. \emph{numpy} è stato impiegato per l’elaborazione numerica di base, \emph{pandas} per l’organizzazione e l’aggregazione dei risultati raccolti durante gli esperimenti, e \emph{matplotlib} per la generazione delle visualizzazioni utilizzate nel confronto tra la versione base dell’algoritmo e quella dotata di profiling. I dati sono stati esportati in formato CSV e analizzati tramite notebook dedicati, permettendo di sintetizzare l’andamento delle performance e supportare quantitativamente la discussione dei risultati.
