@@ -45,12 +45,13 @@ def validate_solution():
 #     UniformInstance(100, 10, 1, 1000, 42),
 # ]
 
-# solver = lambda n_jobs, n_machines, processing_times: (max(max(processing_times), sum(processing_times)/n_machines), None, None, None)
-solver = lambda n_jobs, n_machines, processing_times: (sum(processing_times)/n_machines, None, None, None)
+solver = lambda n_jobs, n_machines, processing_times: (max(max(processing_times), sum(processing_times)/n_machines), None, None, None)
+# solver = lambda n_jobs, n_machines, processing_times: (sum(processing_times)/n_machines, None, None, None)
 # solver = lambda n_jobs, n_machines, processing_times: solve_identical_job_scheduling(n_jobs, n_machines, processing_times, timeout_minutes=1, verbose=False)
 
 # instances = pd.Series([UniformInstance(200, n_machines, 1, 1000, 99) for n_machines in np.arange(75, 200, 25)])
-instances = pd.Series([UniformInstance(n_jobs, n_machines, 1, 5000, seed) for n_jobs in [10, 25, 50, 75, 100, 150, 200, 500, 1000, 2000] for n_machines in [10, 25, 50, 75, 100, 125, 150, 175, 200] for seed in [1, 7, 13] if n_machines < n_jobs])
+# instances = pd.Series([UniformInstance(n_jobs, n_machines, 1, 5000, seed) for n_jobs in [10, 25, 50, 75, 100, 150, 200, 500, 1000, 2000] for n_machines in [10, 25, 50, 75, 100, 125, 150, 175, 200] for seed in [1, 7, 13] if n_machines < n_jobs])
+instances = pd.Series([UniformInstance(2*n_machines, n_machines, 1, 5000, seed) for n_machines in [10, 25, 50, 75, 100] for seed in range(1,101)])
 instances.apply(lambda instance: instance.set_solver(solver))
 
 epsilons = [0.01]
