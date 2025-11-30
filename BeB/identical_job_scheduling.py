@@ -144,7 +144,7 @@ class BranchAndBound:
                 X_int[(j, i)] = 1
                 completion_times[i] += self.processing_times[j]
             return X_int, max(completion_times)
-
+        
         if self.rounding_rule == "first_machine":
             # Each fractional job is put on the first machine it was assigned to.
             for j in fractional_jobs:
@@ -155,7 +155,7 @@ class BranchAndBound:
                 for other_i in assigned_machines[1:]:
                     X_int[(j, other_i)] = 0
             return X_int, max(completion_times)
-
+        
         if self.rounding_rule == "best_matching":
             # The at most m fractional jobs are assigned in a matching such that the total makespan is minimal.
             # We iterate through all possible placements of the (<=m) fractional jobs on the m machines.
@@ -206,7 +206,7 @@ class BranchAndBound:
 
         self.verbose = verbose
         self.TOL = 1e-6
-        self.MAX_NODES = 1_000
+        self.MAX_NODES = 2_000
 
         if self.profiling_mode == ProfilingMode.NO_PROFILING:
             self.profiling = None
