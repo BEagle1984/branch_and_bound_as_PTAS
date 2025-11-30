@@ -121,13 +121,11 @@ class InstanceHandler:
         os.makedirs(self.path, exist_ok=True)
 
     def fetch(self, instance: InstanceTemplate, verbose: bool = False) -> tuple[int, int, list[int], float]:
-    def fetch(self, instance: InstanceTemplate, verbose: bool = False) -> tuple[int, int, list[int], float]:
         """
         Fetch an instance with the specified number of jobs and machines.
         If the instance exists, load it from file. Otherwise, create a new instance.
         
         Args:
-            instance (InstanceTemplate): Instance template containing n_jobs, n_machines, and optionally seed
             instance (InstanceTemplate): Instance template containing n_jobs, n_machines, and optionally seed
             verbose (bool, optional): Enable verbose output
             
@@ -135,17 +133,12 @@ class InstanceHandler:
             tuple: (n_jobs, n_machines, processing_times, OPT_exact)
         """
         
-        
         if verbose:
-            print(f"Fetching instance: {instance.n_jobs} jobs, {instance.n_machines} machines")
-
-        if self._exists(instance, verbose):
             print(f"Fetching instance: {instance.n_jobs} jobs, {instance.n_machines} machines")
 
         if self._exists(instance, verbose):
             if verbose:
                 print("Instance found, loading from file")
-            self._load(instance, verbose)
             self._load(instance, verbose)
         else:
             if verbose:
@@ -154,27 +147,17 @@ class InstanceHandler:
         return instance.get()
 
     def _exists(self, instance: InstanceTemplate, verbose: bool = False) -> bool:
-            self._solve_and_save(instance, verbose)
-        return instance.get()
-
-    def _exists(self, instance: InstanceTemplate, verbose: bool = False) -> bool:
         """Check if an instance file exists for the given parameters."""
-        full_path = os.path.join(self.path,  instance.filename())
         full_path = os.path.join(self.path,  instance.filename())
         exists = os.path.exists(full_path)
         if verbose:
             print(f"Checking file: {instance.filename()} - {'Found' if exists else 'Not found'}")
-            print(f"Checking file: {instance.filename()} - {'Found' if exists else 'Not found'}")
         return exists
 
     def _load(self, instance: InstanceTemplate, verbose: bool = False) -> None:
-    def _load(self, instance: InstanceTemplate, verbose: bool = False) -> None:
         """Load an existing instance from file."""
         full_path = os.path.join(self.path, instance.filename())
-        full_path = os.path.join(self.path, instance.filename())
         if verbose:
-            print(f"Loading instance from: {full_path}")
-
             print(f"Loading instance from: {full_path}")
 
         with open(full_path, 'r') as f:
@@ -207,7 +190,6 @@ class InstanceHandler:
         if "Optimal makespan =" not in last_line:
             raise ValueError(f"Invalid file format. Expected last line to contain 'Optimal makespan =', but got: '{last_line}'")
         makespan = float(last_line.split("=")[1].strip())
-        makespan = float(last_line.split("=")[1].strip())
         
         if verbose:
             print(f"Loaded instance with optimal makespan: {makespan}")
@@ -220,51 +202,27 @@ class InstanceHandler:
     def _solve_and_save(self, instance: InstanceTemplate, verbose: bool = False) -> None:
         """Solve an existing instance and save the results to file."""
         start_time = time.time()
-            print(f"Loaded instance with optimal makespan: {makespan}")
-
-        assert n_jobs_loaded == instance.n_jobs, "Number of jobs does not match"
-        assert n_machines_loaded == instance.n_machines, "Number of machines does not match"
-        assert len(processing_times) == n_jobs_loaded, "Number of processing times does not match number of jobs"
-        instance.set(n_jobs_loaded, n_machines_loaded, processing_times, makespan)
-
-    def _solve_and_save(self, instance: InstanceTemplate, verbose: bool = False) -> None:
-        """Solve an existing instance and save the results to file."""
-        start_time = time.time()
         if verbose:
-            print("Solving instance...")
-        instance.solve()
             print("Solving instance...")
         instance.solve()
         if verbose:
             print(f"Solved instance with makespan: {instance.makespan} [in {time.time() - start_time:.0f} seconds]")
 
         self._save(instance, verbose)
-            print(f"Solved instance with makespan: {instance.makespan} [in {time.time() - start_time:.0f} seconds]")
-
-        self._save(instance, verbose)
         if verbose:
-            print("Instance saved successfully")
-
-    def _save(self, instance: InstanceTemplate, verbose: bool = False) -> None:
             print("Instance saved successfully")
 
     def _save(self, instance: InstanceTemplate, verbose: bool = False) -> None:
         """Save an instance to file."""
         full_path = os.path.join(self.path, instance.filename())
-        full_path = os.path.join(self.path, instance.filename())
         if verbose:
             print(f"Saving instance to: {full_path}")
-            print(f"Saving instance to: {full_path}")
         with open(full_path, 'w') as f:
-            f.write(f"Jobs, Machines = {instance.n_jobs}, {instance.n_machines}\n")
             f.write(f"Jobs, Machines = {instance.n_jobs}, {instance.n_machines}\n")
             # Write each processing time on a separate line
             f.write(f"Processing times (line n contains processing time for job n for machines 1 to m):\n")
             for time in instance.processing_times:
-            f.write(f"Processing times (line n contains processing time for job n for machines 1 to m):\n")
-            for time in instance.processing_times:
                 f.write(f"{time}\n")
-            f.write(f"Optimal makespan = {instance.makespan}\n")
             f.write(f"Optimal makespan = {instance.makespan}\n")
 
 
@@ -313,26 +271,18 @@ if __name__ == "__main__":
         async_results = []
         
         def create_job_callbacks(filename, job_index):
-        def create_job_callbacks(filename, job_index):
             """Create callback functions that know their specific seed and job index"""
             def job_completed_callback(result):
-                n_jobs_ret, n_machines_ret, processing_times, makespan = result
-                print(f"  ✓ Process {job_index}/{len(batch_args)} completed - {filename}: makespan={makespan}")
                 n_jobs_ret, n_machines_ret, processing_times, makespan = result
                 print(f"  ✓ Process {job_index}/{len(batch_args)} completed - {filename}: makespan={makespan}")
             
             def job_error_callback(error):
                 print(f"  ✗ Process {job_index}/{len(batch_args)} failed - {filename}: Error={error}")
 
-                print(f"  ✗ Process {job_index}/{len(batch_args)} failed - {filename}: Error={error}")
-
             return job_completed_callback, job_error_callback
         
         # Submit each job individually with callbacks
         for i, args in enumerate(batch_args):
-            instance = args[0]  # Extract instance from args (UniformInstance, verbose)
-            success_callback, error_callback = create_job_callbacks(instance.filename(), i)
-
             instance = args[0]  # Extract instance from args (UniformInstance, verbose)
             success_callback, error_callback = create_job_callbacks(instance.filename(), i)
 
