@@ -46,10 +46,11 @@ def validate_solution():
 # ]
 
 solver = lambda n_jobs, n_machines, processing_times: (max(max(processing_times), sum(processing_times)/n_machines), None, None, None)
-instances = pd.Series([UniformInstance(2 * n_machines, n_machines, 1, 5000, seed) for n_machines in [10, 25, 50, 75, 100] for seed in range(161, 201)])
+instances = pd.Series([UniformInstance(2 * n_machines, n_machines, 1, 5000, seed) for n_machines in [10, 25, 50, 75, 100] for seed in range(101, 201)])
+# instances = pd.Series([UniformInstance(2 * n_machines, n_machines, 1, 5000, seed) for n_machines in [125, 150] for seed in range(101, 151)])
 instances.apply(lambda instance: instance.set_solver(solver))
 
-epsilons = [0.01]
+epsilons = [0.05]
 
 tests_item = lambda epsilon: [
     {
