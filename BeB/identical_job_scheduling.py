@@ -206,7 +206,7 @@ class BranchAndBound:
 
         self.verbose = verbose
         self.TOL = 1e-6
-        self.MAX_NODES = 1_000
+        self.MAX_NODES = 2_000
 
         if self.profiling_mode == ProfilingMode.NO_PROFILING:
             self.profiling = None
@@ -263,7 +263,7 @@ class BranchAndBound:
                 print(f"Node LB: {parent_node.LB}, Node UB: {parent_node.UB}")
                 print(f"path of the node: {parent_node.fixed}")
 
-            if nodes_explored % 100 == 0:
+            if verbose > 0 and nodes_explored % 100 == 0:
                 current_time = time.strftime("%H:%M:%S")
                 print(f"[{current_time}] Nodes explored: {nodes_explored}, Current upper bound: {self.LUB}, Current lower bound: {self.LLB}", flush=True)
 
