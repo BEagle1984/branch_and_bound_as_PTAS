@@ -51,10 +51,12 @@ solver = lambda n_jobs, n_machines, processing_times: (max(max(processing_times)
 
 # instances = pd.Series([UniformInstance(200, n_machines, 1, 1000, 99) for n_machines in np.arange(75, 200, 25)])
 # instances = pd.Series([UniformInstance(n_jobs, n_machines, 1, 5000, seed) for n_jobs in [10, 25, 50, 75, 100, 150, 200, 500, 1000, 2000] for n_machines in [10, 25, 50, 75, 100, 125, 150, 175, 200] for seed in [1, 7, 13] if n_machines < n_jobs])
-instances = pd.Series([UniformInstance(2*n_machines, n_machines, 1, 5000, seed) for n_machines in [10, 25, 50, 75, 100] for seed in range(1,101)])
+# instances = pd.Series([UniformInstance(2*n_machines, n_machines, 1, 5000, seed) for n_machines in [5, 10, 25, 50, 75, 100] for seed in range(81,101)])
+instances = pd.Series([UniformInstance(2*n_machines, n_machines, 1, 5000, seed) for n_machines in [5] for seed in range(100,201)])
+# instances = pd.Series([UniformInstance(2*n_machines, n_machines, 1, 5000, seed) for n_machines in [100] for seed in range(100,101)])
 instances.apply(lambda instance: instance.set_solver(solver))
 
-epsilons = [0.01]
+epsilons = [0.1]
 
 tests_item = lambda epsilon: [
     {

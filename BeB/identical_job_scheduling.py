@@ -188,6 +188,8 @@ class BranchAndBound:
         if self.profiling_mode == ProfilingMode.NO_PROFILING:
             return self.LUB / self.LLB < 1 + self.epsilon
         else:
+            # TODO: Remove next line
+            # print("LUB/LLB = ", self.LUB, "/", self.LLB, " = ", self.LUB / self.LLB, " < (1+e)^2 = ", (1 + self.epsilon) ** 2)
             return self.LUB / self.LLB < (1 + self.epsilon) ** 2
 
     def solve(self, n_jobs: int, n_machines: int, processing_times: list[int], verbose=0, opt=None):
@@ -381,17 +383,23 @@ class BranchAndBound:
             if opt is not None and abs(self.LUB - opt) <= self.TOL and not_yet_opt:
                 nodes_opt = nodes_explored
                 not_yet_opt = False
+                # TODO: Remove next line
+                # print("- CRITERION: abs(self.LUB - opt) <= self.TOL")
                 break
 
             # We stop if the stopping criterion holds, or if we explored too many nodes.
             if nodes_explored > self.MAX_NODES:
                 # if not_yet_opt:
                 #     nodes_opt = nodes_explored
+                # TODO: Remove next line
+                # print("- CRITERION: nodes_explored > self.MAX_NODES")
                 return self.LUB, self.LUB_argmin, self.LUB_nodes_explored, self.LLB, time.time() - start, nodes_explored, nodes_opt, max_depth, False  # Terminating because of the number of nodes
 
             if self.stopping_criterion():
                 # if not_yet_opt:
                 #     nodes_opt = nodes_explored
+                # TODO: Remove next line
+                # print("- CRITERION: stopping_criterion())")
                 return self.LUB, self.LUB_argmin, self.LUB_nodes_explored, self.LLB, time.time() - start, nodes_explored, nodes_opt, max_depth, True  # Terminating because of the stopping criterion
 
         """ 
@@ -401,4 +409,6 @@ class BranchAndBound:
         if not_yet_opt:
             nodes_opt = nodes_explored
 
+        # TODO: Remove next line
+        # print("- CRITERION: queue empty (algorithm ended)")
         return self.LUB, self.LUB_argmin, self.LUB_nodes_explored, self.LLB, time.time() - start, nodes_explored, nodes_opt, max_depth, True

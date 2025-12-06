@@ -1,0 +1,13 @@
+Jobs, Machines = 10, 5
+Processing times (line n contains processing time for job n for machines 1 to m):
+861
+3773
+3093
+467
+4427
+3445
+3172
+2920
+131
+1686
+Optimal makespan = 4795.0
