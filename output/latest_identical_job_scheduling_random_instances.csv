@@ -1,6 +1,7 @@
 instance,epsilon_range,n_machines,n_jobs,epsilon,branching_rule,node_selection,profiling_mode,rounding_rule,lower_bound,best_solution,nodes_to_best_solution,nodes_explored,runtime,opt_gap,terminate,best_bound,depth,number_of_nodes_for_optimality,optimal_solution
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 Uniform1-5000_Seed1_J25_M10,"[0.025332, 0.832460]",10,25,0.02,max_proc,lowest_lower_bound,NO_PROFILING,all_to_shortest,greedy,6180,107,2001,1.1555426120758057,0.07378640776699029,False,5724.0,11,-1,5724.0
 Uniform1-5000_Seed1_J25_M10,"[0.025332, 0.832460]",10,25,0.01,max_proc,lowest_lower_bound,PRUNE,all_to_shortest,greedy,5980,48,48,0.02412247657775879,0.04280936454849498,True,5980.0,15,-1,5724.0
 Uniform1-5000_Seed7_J25_M10,"[0.060725, 0.691370]",10,25,0.02,max_proc,lowest_lower_bound,NO_PROFILING,all_to_shortest,greedy,6760,176,2001,0.9028255939483643,0.045073964497041395,False,6455.3,20,-1,6455.3
@@ -1200,6 +1201,8 @@ Uniform1-5000_Seed100_J200_M100,"[0.000582, 0.968423]",100,200,0.02,max_proc,low
 Uniform1-5000_Seed100_J200_M100,"[0.000582, 0.968423]",100,200,0.01,max_proc,lowest_lower_bound,PRUNE,all_to_shortest,greedy,5469,165,165,17.24333357810974,0.057078076430791706,True,5435.0,158,-1,5156.84
 >>>>>>> 57e5a18 (New data and quick analysis)
 =======
+=======
+>>>>>>> f7fbbf72218bc379e59a0213799061af488e1ff7
 Uniform1-5000_Seed100_J10_M5,"[0.017122, 0.936778]",5,10,0.2,max_proc,lowest_lower_bound,NO_PROFILING,all_to_shortest,greedy,5495,3,3,0.0,0.14969972702456785,True,4672.4,1,-1,4672.4
 Uniform1-5000_Seed100_J10_M5,"[0.017122, 0.936778]",5,10,0.1,max_proc,lowest_lower_bound,PRUNE,all_to_shortest,greedy,5543,5,5,0.0007138252258300781,0.15706296229478628,True,4672.4,3,-1,4672.4
 Uniform1-5000_Seed101_J10_M5,"[0.103523, 0.855792]",5,10,0.2,max_proc,lowest_lower_bound,NO_PROFILING,all_to_shortest,greedy,6454,2,2,0.0,0.10198326619150912,True,5795.8,0,-1,5795.8
@@ -1402,4 +1405,7 @@ Uniform1-5000_Seed199_J10_M5,"[0.090208, 0.975535]",5,10,0.2,max_proc,lowest_low
 Uniform1-5000_Seed199_J10_M5,"[0.090208, 0.975535]",5,10,0.1,max_proc,lowest_lower_bound,PRUNE,all_to_shortest,greedy,4011,6,6,0.0,0.10730491149339319,True,3580.6,4,-1,3580.6
 Uniform1-5000_Seed200_J10_M5,"[0.039457, 1.000000]",5,10,0.2,max_proc,lowest_lower_bound,NO_PROFILING,all_to_shortest,greedy,4900,-1,2,0.0,0.037959183673469385,True,4714.0,0,-1,4714.0
 Uniform1-5000_Seed200_J10_M5,"[0.039457, 1.000000]",5,10,0.1,max_proc,lowest_lower_bound,PRUNE,all_to_shortest,greedy,4900,-1,2,0.0,0.037959183673469385,True,4714.0,0,-1,4714.0
+<<<<<<< HEAD
 >>>>>>> f7fbbf7 (new data and updates plots)
+=======
+>>>>>>> f7fbbf72218bc379e59a0213799061af488e1ff7
