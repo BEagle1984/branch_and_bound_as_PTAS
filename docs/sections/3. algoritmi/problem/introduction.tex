@@ -1,0 +1,62 @@
+\section{Problem introduction}
+The problem considered in this project is a scheduling problem, namely a \emph{parallel machines scheduling problem}. It involves a set of $n$ jobs $\mathcal{J}$ that need to be assigned to a set of $m$ machines $\mathcal{M}$. Each job has an associated processing time depending on which machine it is assigned to.
+
+The objective of the scheduling problem is to minimize the makespan (the cost, i.e. the completion time), which is defined as the maximum completion time across all machines.
+
+
+\subsection{Instance definition}
+An \emph{instance} of the scheduling problem can be informally described as numerical data that characterizes the specific scenario to be solved. In our case, an instance is defined by the processing times of each job on each machine, hence describing the costs of assigning jobs to machines:
+\begin{itemize}
+  \item Matrix of the \emph{processing times} of the job $i$ running on machine $j$, denoted as $p_{ij}$ for $i = 1, 2, \ldots, n$ and $j = 1, 2, \ldots, m$.
+\end{itemize}
+
+
+\subsection{Problem difficulty}
+A scheduling problem, and therefore its instances, can be easy to solve or hard to solve depending on the characteristics of the problem itself. Some characteristics that influence the difficulty are
+\begin{itemize}
+  \item \textbf{Job processing times} - variation in processing times across jobs,
+  \item \textbf{Machine capabilities} - difference between machines involved,
+  \item \textbf{Size of the problem} - number of jobs and machines involved.
+\end{itemize}
+Next, we consider a few scenarios to illustrate how the above-mentioned characteristics affect a problem's difficulty.
+
+
+\subsubsection{Job processing times}
+Before we discuss the impact of job processing times on problem difficulty, we restrict the scope of this project to deterministic processing times, meaning that the processing time for each job on each machine is fixed and known in advance.
+
+We distinguish between small and big jobs based on their processing times. We defer the exact definition of small and big jobs to a later section [\todo{ref. required - definition using $\epsilon$...}], as it requires a concept we have yet to introduce.
+
+The ratio between small and big jobs leads to different scenarios:
+\begin{itemize}
+  \item \textbf{EASY - Homogeneous jobs}: Small and big jobs have roughly the same processing times, leading to a more uniform distribution of workload across machines. This scenario simplifies the assignment process, as there are fewer variations to consider.
+  \item \textbf{HARD - Mixed jobs}: A significant variation in processing times among jobs, with a mix of small and big jobs. This scenario introduces complexity in balancing the load across machines, as assigning big jobs to certain machines can lead to bottlenecks.
+  \item \textbf{EASY - Dominant big jobs}: The presence of a few big jobs that dominate the processing times, while the rest are small. In this case, the focus shifts to efficiently scheduling the big jobs, while small jobs can be more flexibly assigned.
+\end{itemize}
+
+
+\subsubsection{Machine capabilities}
+Machine capabilities play an important role in the complexity of the scheduling problem. As machines become less uniform and more specialized, the problem shifts from a simple sequencing task to a complex assignment problem. We identify three main scenarios, enumerated from easiest to hardest:
+\begin{itemize}
+  \item \textbf{Identical machines}: All machines have the same capabilities, meaning a job's processing time is the same on any machine. This scenario simplifies the scheduling process, as any job can be assigned to any machine without affecting the overall makespan.
+  \item \textbf{Uniform machines}: Machines have different but fixed capabilities (e.g. speeds; the speed is a machine characteristic and is the same across all jobs), leading to varying processing times for jobs depending on the machine they are assigned to. This scenario introduces complexity in balancing the load across machines, as some machines may become bottlenecks.
+  \item \textbf{Unrelated machines}: Each machine has unique capabilities, meaning processing time of a job varies significantly depending on the machine it is assigned to. This scenario represents the most complex case, as it requires careful consideration of both job assignments and machine capabilities to minimize the makespan effectively.
+\end{itemize}
+
+For the sake of this project, we only focus on the first case of \emph{identical machines}.
+
+To summarize, the interplay between job processing times and machine capabilities significantly influences the complexity of the scheduling problem. By focusing on identical machines, we aim to simplify the analysis while still addressing a meaningful subset of the problem.
+
+
+\subsubsection{Size of the problem}
+Let's begin by discussing the \emph{size of the problem}, which is arguably the easier influential factor to visualize. We approach this by distinguishing first by the growth in size, then by the ratio between jobs and machines.
+
+In the first case, it is intuitive that as the number of jobs and machines increases, the complexity of finding an optimal solution also increases. This is due to the exponential growth of possible assignments, space complexity $\mathcal{O}(m^n\cdot n!)$.
+
+In the second case, we stumble upon an open question. The general consensus, based on heuristics, builds around three main scenarios:
+\begin{itemize}
+  \item \textbf{EASY - Machines abundance} ($n/m\rightarrow 0$): A lot of machines are available to accommodate the jobs, leading to less contention and simpler assignment strategies.
+  \item \textbf{HARD - Bottleneck} ($n/m \approx 1\dots 1.5$): Significant contention for machines, leading to many local optimum and making it difficult to find a the global optimum; requires more sophisticated strategies (e.g. Simulated Annealing)  to optimize the assignment.
+  \item \textbf{EASY - Jobs abundance} ($n/m \rightarrow \infty$): Many jobs compete for a limited number of machines, this leads to a saturation of the machines, as machines will be heavily loaded regardless of the specific assignment (critical sequence of operations matters less), i.e. there are many near-optimal solutions.
+\end{itemize}
+
+For the hardest case, the literature [\todo{ref. needed!}] suggests a ratio of $n/m \approx 1\dots 1.5$ as a particularly challenging case, although this is not a strict rule and can vary based on the problem type [see \todo{section Problem type}], i.e. factors such as job processing times and machine capabilities.
