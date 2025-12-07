@@ -1,21 +1,29 @@
-%%%%%%%%%%%%%%%%%%%%
-%%%   Packages   %%%
-%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%   PACKAGES                                           %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{currfile}
 \usepackage{hyperref}
 \usepackage{float}
 \usepackage{tabularx}
 \usepackage{xcolor}
+\usepackage{parskip}
+
+\usepackage[linesnumbered, ruled, vlined]{algorithm2e}
+
+\usepackage{enumitem}
+\setlist[itemize]{noitemsep, nolistsep}
 
 
 
-%%%%%%%%%%%%%%%%%%%%
-%%%   Commands   %%%
-%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%   COMMANDS                                           %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%% custom commands %%%%%
+%%% custom commands %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newcommand{\todo}[1]{\textcolor{red}{#1}}
 
-%%% \chapter %%%%%%%
+%%% \chapter %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{titlesec}
 \titleformat
 {\chapter} % command
 %[] % shape

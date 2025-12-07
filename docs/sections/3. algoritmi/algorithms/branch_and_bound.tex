@@ -1,0 +1,55 @@
+\section{Branch-and-Bound}
+Branch-and-Bound (B\&B) is the foundation of this project and is one of the numerous techniques available for solving combinatorial optimization problems, such as the scheduling problem. Other techniques include greedy algorithms, dynamic programming, and heuristic methods, which we will not mention in this context.
+
+The Branch-and-Bound method is used to solve NP-hard problems. The algorithm systematically explores the solution space by dividing the problem into smaller subproblems (\emph{branching}) and calculating lower and upper bounds to evaluate the quality of the solutions found (\emph{bounding}). Once a subproblem's bound indicates that it cannot yield a better solution than the best one found so far, a new subproblem is selected for exploration. If a subproblem's bound is worse than the current best solution, it is ignored and the process continues (\emph{selection/search}). This process continues until all subproblems have been explored or pruned, ultimately leading to the optimal solution.
+
+From the brief description above, we can identify three main components of Branch-and-Bound:
+\begin{itemize}
+  \item \textbf{Branching}: The division of the problem into smaller subproblems. In the context of the scheduling problem, this could involve deciding to assign a specific job to a specific machine.
+  \item \textbf{Bounding}: The calculation of lower and upper bounds for each subproblem. These bounds help determine whether a subproblem can be discarded (pruning) or if it should be further explored.
+  \item \textbf{Selection/Search}: The strategy used to select which subproblem to explore next. This can be done using different strategies, such as depth-first or breadth-first.
+\end{itemize}
+
+To better understand the algorithm's flow and its application to the scheduling problem, we delve into its specific characteristics in the next section.
+
+\subsection{Algorithm deeper dive}
+The Branch-and-Bound algorithm has some specific characteristics that are worth exploring in more detail. The pseudo-code provided below illustrates them, and aims to ease the understanding of the algorithm's flow.
+
+\todo{TODO: Current pseudo-code is very generic, needs details specific to our problem (e.g. how to branch, how to bound, etc.)}
+
+\begin{algorithm}[H]
+\KwIn{Instance of the scheduling problem}
+\KwOut{Optimal job-machine assignment minimizing the makespan}
+Initialize the best solution found so far $C_{best} \leftarrow \infty$\;
+Initialize the root node representing the entire problem\;
+Create a priority queue to manage nodes to explore\;
+Add the root node to the queue\;
+\While{the queue is not empty}{
+    Select and remove a node from the queue based on the search strategy\;
+    \eIf{the node represents a complete solution}{
+        \If{the solution's cost $C_{node} < C_{best}$}{
+            Update the best solution found so far $C_{best} \leftarrow C_{node}$\;
+        }
+    }{
+        Generate child nodes by branching on possible job-machine assignments\;
+        \ForEach{child node}{
+            Calculate lower bound $LB_{child}$ for the child node\;
+            \eIf{$LB_{child} < C_{best}$}{
+                Add the child node to the queue for further exploration\;
+            }{
+                Prune the child node (do not add it to the queue)\;
+            }
+        }
+    }
+}
+\Return{the best solution found $C_{best}$}\;
+\caption{Branch-and-Bound Algorithm for the identical machines scheduling problem}
+\end{algorithm}
+
+
+\subsection{Components details}
+\subsubsection{Lower bound calculation}
+\todo{TODO: Greedy approach...}
+
+\subsection{Algorithm enhancement}
+\todo{TODO: Profiling...}
