@@ -6,17 +6,17 @@ Il lavoro di semestre si inserisce nel contesto del paper \emph{Branch-and-Bound
 
 Il progetto richiede i seguenti requisiti funzionali:
 
-\begin{description}
+\begin{description}[style=nextline]
 
-    \item[RF1 -- Solver per identical machines]~\\ Realizzare una variante dell’algoritmo Branch-and-Bound in grado di risolvere il problema di scheduling su identical machines, adattando la struttura e le funzioni dell’implementazione esistente per le unrelated machines.
+    \item[RF1 -- Solver per identical machines] Realizzare una variante dell’algoritmo Branch-and-Bound in grado di risolvere il problema di scheduling su identical machines, adattando la struttura e le funzioni dell’implementazione esistente per le unrelated machines.
 
-    \item[RF2 -- Integrazione del profiling]~\\ Implementare il meccanismo di profiling descritto nel paper, così da ottenere una seconda variante dell’algoritmo direttamente confrontabile con la versione base.
+    \item[RF2 -- Integrazione del profiling] Implementare il meccanismo di profiling descritto nel paper, così da ottenere una seconda variante dell’algoritmo direttamente confrontabile con la versione base.
 
-    \item[RF3 -- Generazione ed esecuzione degli esperimenti]~\\ Eseguire entrambe le varianti dell’algoritmo e registrare i risultati, raccogliendo una quantità consona di dati.
+    \item[RF3 -- Generazione ed esecuzione degli esperimenti] Eseguire entrambe le varianti dell’algoritmo e registrare i risultati, raccogliendo una quantità consona di dati.
 
-    \item[RF4 -- Raccolta dei dati]~\\ Memorizzare in formato strutturato informazioni quali nodi esplorati, tempo di esecuzione, delta rispetto alla soluzione ottima dell’istanza considerata e altre metriche rilevanti.
+    \item[RF4 -- Raccolta dei dati] Memorizzare in formato strutturato informazioni quali nodi esplorati, tempo di esecuzione, delta rispetto alla soluzione ottima dell’istanza considerata e altre metriche rilevanti.
 
-    \item[RF5 -- Validazione sperimentale]~\\ Analizzare i dati raccolti, con l’aiuto di strumenti statistici e di visualizzazione, per verificare l’efficacia del profiling rispetto alla versione base dell’algoritmo.
+    \item[RF5 -- Validazione sperimentale] Analizzare i dati raccolti, con l’aiuto di strumenti statistici e di visualizzazione, per verificare l’efficacia del profiling rispetto alla versione base dell’algoritmo.
 
 \end{description}
 
@@ -24,12 +24,12 @@ Il progetto richiede i seguenti requisiti funzionali:
 
 Non erano previsti requisiti non funzionali formali, ma il progetto implicava alcuni vincoli pratici:
 
-\begin{description}
+\begin{description}[style=nextline]
 
-    \item[Efficienza computazionale]~\\ L’implementazione e la scelta delle istanze dovevano permettere di generare e analizzare un numero significativo di dati entro i limiti temporali del lavoro di semestre.
+    \item[Efficienza computazionale] L’implementazione e la scelta delle istanze dovevano permettere di generare e analizzare un numero significativo di dati entro i limiti temporali del lavoro di semestre.
 
-    \item[Ripetibilità]~\\ La generazione delle istanze e l’esecuzione degli algoritmi dovevano essere riproducibili tramite seed controllati.
+    \item[Ripetibilità] La generazione delle istanze e l’esecuzione degli algoritmi dovevano essere riproducibili tramite seed controllati.
 
-    \item[Mantenibilità e pulizia del codice]~\\ Anche trattandosi di un esperimento non destinato a evoluzione futura, il codice doveva essere scritto in modo chiaro e integrarsi coerentemente con la struttura esistente.
+    \item[Mantenibilità e pulizia del codice] Anche trattandosi di un esperimento non destinato a evoluzione futura, il codice doveva essere scritto in modo chiaro e integrarsi coerentemente con la struttura esistente.
 
 \end{description}

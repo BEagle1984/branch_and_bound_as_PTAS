@@ -4,6 +4,181 @@
 \section{Architettura e struttura del codice}
 
 \section{Branch-and-Bound}
+\label{sec:bb-framework}
+
+The implementation employed in this project is based on a branch-and-bound (B\&B) framework originally developed for the \emph{unrelated machines scheduling} problem.
+The same structure is later reused for the identical machines case, where only the lower-bound routines and certain optimisation components (such as profiling) are adapted, while the core branching, bounding, rounding, pruning, and node-selection logic remains unchanged.
+
+\subsection{Overview of the Framework}
+
+Each node of the B\&B tree represents a partial assignment of jobs to machines and is defined by:
+\begin{itemize}
+  \item a set of fixed assignments \(\texttt{fixed} \subseteq \{0,\dots,n-1\} \times \{0,\dots,m-1\}\),
+  \item an overhead vector \(h \in \mathbb{R}^{m}\) containing the machine loads induced by these assignments,
+  \item a fractional solution \(X^{\text{frac}}\) obtained from a relaxation of the problem,
+  \item a node lower bound \(\text{LB}\) and a node upper bound \(\text{UB}\),
+  \item the depth of the node in the search tree.
+\end{itemize}
+
+The global state maintains a best-known integer solution (global upper bound \(\text{LUB}\)) and a global lower bound \(\text{LLB}\) derived from active nodes.
+Four main components determine the behaviour of the algorithm:
+
+\begin{description}[style=nextline]
+
+  \item[Bounding] A lower bound is computed for each node by solving either a linear relaxation or a feasibility-based binary search.
+  Nodes whose lower bound is not better than the current \(\text{LUB}\) are immediately pruned.
+
+  \item[Branching] If the fractional relaxation contains non-integer job assignments, one fractional job is selected according to a branching rule.
+  This job is then fixed on each possible machine, producing up to \(m\) child nodes.
+
+  \item[Rounding] A feasible integer solution is generated from the fractional relaxation using a deterministic rounding strategy.
+  This solution yields an upper bound (\(\text{UB}\)) for the node and may improve the global best solution.
+
+  \item[Node selection] Nodes are stored in a priority queue, ordered according to a configurable strategy (best lower bound first, depth-first, breadth-first).
+  This choice influences the traversal order but not correctness.
+\end{description}
+
+The algorithm proceeds by repeatedly extracting the next node from the queue, updating global bounds, checking for termination, branching on fractional jobs, and processing child nodes until either the relative optimality gap satisfies
+\[
+  \frac{\text{LUB}}{\text{LLB}} < 1 + \varepsilon
+\]
+, or the search space has been fully explored.
+An hard limit on the number of nodes explored may also be imposed to prevent excessive runtimes.
+
+\subsection{Pseudocode}
+
+\begin{algorithm}[H]
+  \caption{Branch-and-bound for unrelated machines scheduling (inherited framework)}
+  \label{alg:bb-unrelated}
+  \begin{algorithmic}[1]
+    \Require processing times \(p_{j,i}\), node selection strategy, lower-bound strategy, branching rule, rounding rule, tolerance \(\varepsilon\)
+    \State Initialize global bounds: \(\text{LUB} \gets +\infty\), \(\text{LLB} \gets -\infty\)
+    \State Set root depth \(d = 0\), overhead \(h = (0,\dots,0)\), and fixed assignments \(\texttt{fixed} = \emptyset\)
+
+    \State Compute root lower bound: \((X^{\text{frac}}, \text{LB}) \gets \texttt{LowerBound}(p, h, \texttt{fixed})\)
+    \If{\(X^{\text{frac}}\) is integer}
+      \State \(\text{LUB} \gets \text{LB}\)
+      \State \Return optimal solution found at the root
+    \EndIf
+
+    \State Compute initial feasible solution: \((X^{\text{int}}, \text{UB}) \gets \texttt{Rounding}(X^{\text{frac}}, \texttt{fixed})\)
+    \State \(\text{LUB} \gets \text{UB}\)
+
+    \State Create root node \(N_0\) and insert it into the priority queue \(Q\)
+
+    \While{\(Q \neq \emptyset\)}
+      \State Extract next node \(N = (X^{\text{frac}}, \text{LB}, d, \texttt{fixed}, h, X^{\text{int}}, \text{UB})\)
+
+      \State Update global lower bound:
+        \[
+          \text{LLB} \gets \min(\text{LUB},\ \min_{N' \in Q} \text{LB}(N'))
+        \]
+
+      \If{\(\text{LUB} / \text{LLB} < 1 + \varepsilon\)}
+        \State \Return current best solution
+      \EndIf
+
+      \State Select branching job \(j\)
+
+      \For{each machine \(q \in \{0,\dots,m-1\}\)}
+        \State Create updated overhead \(h'\) and fixed set \(\texttt{fixed}'\)
+
+        \If{all jobs are fixed}
+          \State Compute \(\text{UB}' = \max_i h'_i\)
+          \If{\(\text{UB}' < \text{LUB}\)} update global best solution \EndIf
+          \State \textbf{continue}
+        \EndIf
+
+        \State Compute child lower bound: \((X^{\text{frac}\prime}, \text{LB}') \gets \texttt{LowerBound}(p, h', \texttt{fixed}')\)
+        \State Apply fixed assignments to \(X^{\text{frac}\prime}\)
+
+        \If{\(\text{LB}' \ge \text{LUB}\)} prune node \EndIf
+
+        \If{\(X^{\text{frac}\prime}\) is integer}
+          \If{\(\text{LB}' < \text{LUB}\)} update global best solution \EndIf
+          \State \textbf{continue}
+        \EndIf
+
+        \State Obtain feasible integer solution:
+        \((X^{\text{int}\prime}, \text{UB}') \gets \texttt{Rounding}(X^{\text{frac}\prime}, \texttt{fixed}')\)
+
+        \If{\(\text{UB}' < \text{LUB}\)} update global best solution \EndIf
+
+        \State Insert new node into \(Q\)
+      \EndFor
+    \EndWhile
+
+    \State \Return best-known integer solution
+  \end{algorithmic}
+\end{algorithm}
+
+\subsection{Lower-Bound Strategies}
+\label{subsec:lower-bounds}
+
+The inherited implementation provides two alternative lower-bound computations for each node of the branch-and-bound tree.
+Both methods operate on the subproblem defined by:
+\begin{itemize}
+  \item the set of fixed assignments \(\texttt{fixed}\),
+  \item the overhead vector \(h \in \mathbb{R}^m\), where \(h_i\) is the load already assigned to machine \(i\),
+  \item the remaining unfixed jobs.
+\end{itemize}
+In both cases, the result is a fractional assignment \(X^{\text{frac}}\) and a scalar lower bound \(\text{LB}\).
+
+\subsubsection{Linear relaxation (\texttt{lin\_relax}).}
+In the linear-relaxation strategy, a linear program is solved in which each unfixed job may be fractionally assigned to machines.
+Let \(x_{j,i} \ge 0\) denote the fraction of job \(j\) assigned to machine \(i\), and let \(C_{\max}\) denote the makespan.
+The model can be expressed as:
+\begin{align*}
+  \min\ & C_{\max} \\
+  \text{s.t. }
+  & \sum_{i=0}^{m-1} x_{j,i} = 1 && \forall j \text{ unfixed}, \\
+  & \sum_{j \text{ unfixed}} p_{j,i} x_{j,i} \le C_{\max} - h_i && \forall i = 0,\dots,m-1, \\
+  & x_{j,i} \ge 0 && \forall j,i.
+\end{align*}
+The fixed jobs do not appear as decision variables; their contribution is encoded in the overhead \(h\).
+The optimal value \(C_{\max}^{\star}\) is used as the node lower bound \(\text{LB}\), and the corresponding solution defines \(X^{\text{frac}}\).
+Due to the structure of the formulation, at most \(m\) jobs are fractional in the optimal solution.
+
+\subsubsection{Binary search on the makespan (\texttt{bin\_search}).}
+The second strategy performs a binary search on the makespan value.
+An interval \((\ell, r]\) is maintained such that \(\ell\) is infeasible and \(r\) is feasible.
+For a candidate makespan \(C\), a feasibility LP is solved with variables \(x_{j,i}\) for unfixed jobs, subject to:
+\begin{align*}
+  & \sum_{i=0}^{m-1} x_{j,i} = 1 && \forall j \text{ unfixed}, \\
+  & \sum_{j \text{ unfixed}} p_{j,i} x_{j,i} \le C - h_i && \forall i = 0,\dots,m-1, \\
+  & x_{j,i} = 0 && \text{if } p_{j,i} > C - h_i, \\
+  & x_{j,i} \ge 0 && \text{otherwise}.
+\end{align*}
+If the LP is feasible, the value \(C\) becomes the new right endpoint; otherwise it becomes the new left endpoint.
+The process continues until \((\ell, r]\) cannot be further refined, and the final feasible value \(r\) is taken as the node lower bound.
+The corresponding LP solution defines the fractional assignment \(X^{\text{frac}}\).
+
+\subsection{Branching Rules}
+\label{subsec:branching-rules}
+
+When the relaxation at a node produces a non-integer solution, a set of \emph{fractional jobs} is obtained, namely those jobs \(j\) for which at least one variable \(x_{j,i}\) is non-integer.
+The implementation assumes that the number of such jobs is at most the number of machines \(m\), which is guaranteed by the structure of the relaxations.
+A branching rule selects one job \(j\) from this set, and the node is branched by fixing job \(j\) on each machine \(q = 0,\dots,m-1\), generating up to \(m\) children.
+
+Two selection criteria are provided.
+
+\subsubsection{Maximum minimum processing time (\texttt{max\_min\_proc}).}
+For each fractional job \(j\), the quantity
+\[
+    \min_{i = 0,\dots,m-1} p_{j,i}
+\]
+is considered.
+The branching job is the one that maximises this minimum processing time.
+This rule gives priority to jobs that are relatively expensive even on their best machine, so that branching decisions focus on jobs with high potential impact on the makespan.
+
+\subsubsection{Maximum average processing time (\texttt{max\_avg\_proc}).}
+For each fractional job \(j\), the average processing time
+\[
+    \frac{1}{m} \sum_{i=0}^{m-1} p_{j,i}
+\]
+is computed.
+The branching job is the one with maximum average processing time, i.e., the job that is globally heaviest across all machines.
+This tends to branch first on jobs that dominate the total processing workload.
 
 \section{Greedy}
 
