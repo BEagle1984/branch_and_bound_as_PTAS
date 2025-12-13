@@ -226,10 +226,241 @@ This strategy explores complete assignments early, which may quickly produce goo
 Nodes are selected in order of increasing depth.
 This strategy explores the search tree level by level and provides a more uniform coverage of the solution space, at the cost of potentially delaying the discovery of good feasible solutions.
 
-\section{Greedy}
+\section{Adaptation to Identical Machines Scheduling}
+\label{sec:bb-identical}
 
-\section{Profiling}
+This section describes the adaptation of the inherited branch-and-bound (B\&B) framework to the
+\emph{identical machines scheduling} problem, which constitutes the main scope of this project.
+While the overall structure of the algorithm remains unchanged, the identical-machines setting
+enables problem-specific simplifications and optimisations that significantly affect the
+bounding procedures, rounding strategies, stopping criterion, and the integration of profiling
+mechanisms inspired by the PTAS described in the reference paper.
+
+All theoretical ideas originate from the paper; the contribution of this project lies in their
+faithful translation into a robust and efficient implementation, addressing practical issues
+that arise when embedding PTAS concepts into a branch-and-bound framework.
+
+\subsection{Key Differences with Respect to the Unrelated Case}
+
+In the identical-machines setting, processing times depend only on the job index, i.e.\
+\(p_{j,i} = p_j\) for all machines \(i\).
+This structural simplification leads to the following consequences:
+
+\begin{itemize}
+  \item The fractional optimum for the root relaxation admits a closed form, given by the average load.
+  \item Lower-bound computations can be simplified and made solver-independent.
+  \item Rounding strategies can exploit the symmetry between machines and rely on current machine loads.
+  \item Profiling-based prioritisation and pruning can be integrated to reduce the effective search space.
+  \item The stopping criterion must be relaxed to account for the additional approximation introduced by profiling.
+\end{itemize}
+
+The following subsections describe these adaptations in detail.
+
+\subsection{Bounding for Identical Machines}
+\label{subsec:identical-bounds}
+
+\subsubsection{LP-based approach and rounding incompatibility}
+
+An initial attempt to reuse the LP-based bounding strategies employed for the unrelated-machines
+case relied on solving linear relaxations via a generic LP solver.
+However, the rounding procedures used throughout the framework rely on the structural property
+that the number of fractional jobs in an optimal relaxation solution is bounded by the number of
+machines \(m\).
+
+In practice, the LP solver occasionally returned fractional solutions that violated this assumption,
+for instance by distributing a large number of jobs fractionally across machines.
+While such solutions are theoretically valid, they are incompatible with the in-place rounding
+procedures assumed by the framework, causing rounding to become ill-defined or inefficient.
+
+Since enforcing a specific extreme-point structure on the solver output proved impractical, a
+different approach was adopted for the identical-machines case.
+
+\subsubsection{Greedy fractional bound}
+\label{subsec:greedy-bound}
+
+For identical machines, the relaxation admits a much simpler structure.
+Let
+\[
+  C_{\max}^{\text{frac}} = \frac{1}{m} \sum_{j=1}^{n} p_j
+\]
+denote the fractional optimum makespan in the absence of fixed jobs.
+The greedy bound constructs a feasible fractional assignment that respects the current fixed
+assignments and machine loads, and fills the remaining capacity up to \(C_{\max}^{\text{frac}}\).
+
+The procedure operates as follows:
+\begin{itemize}
+  \item The current machine loads induced by fixed jobs are stored in an overhead vector \(h\).
+  \item Unfixed jobs are processed sequentially.
+  \item Each job is fractionally assigned to machines whose current load is below
+        \(C_{\max}^{\text{frac}}\), until its processing time is fully distributed.
+\end{itemize}
+
+The resulting fractional assignment is feasible by construction and yields a valid lower bound
+for the corresponding subproblem.
+Moreover, the greedy procedure is deterministic and produces fractional solutions compatible with
+the rounding strategies used in the framework.
+
+\begin{algorithm}[H]
+\caption{Greedy fractional bound for identical machines}
+\label{alg:greedy-bound}
+\begin{algorithmic}[1]
+\Require processing times \(p_j\), overhead \(h\), number of machines \(m\)
+\State \(C_{\max} \gets \frac{1}{m} \sum_j p_j\)
+\State \(C_i \gets h_i\) for all machines \(i\)
+\For{each unfixed job \(j\)}
+  \State \(r \gets p_j\)
+  \While{\(r > 0\)}
+    \State select a machine \(i\) with \(C_i < C_{\max}\)
+    \State \(\delta \gets \min(r, C_{\max} - C_i)\)
+    \State assign fraction \(\delta / p_j\) of job \(j\) to machine \(i\)
+    \State \(C_i \gets C_i + \delta\), \(r \gets r - \delta\)
+  \EndWhile
+\EndFor
+\State \Return fractional assignment and makespan \(\max_i C_i\)
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Rounding Strategies for Identical Machines}
+\label{subsec:identical-rounding}
+
+Given a fractional solution \(X^{\text{frac}}\), a deterministic rounding procedure is applied to
+obtain a feasible integer schedule.
+Jobs that are already integrally assigned in \(X^{\text{frac}}\), as well as fixed jobs, are preserved.
+Let \(F\) denote the set of fractional jobs.
+
+\paragraph{Assign-to-shortest machine (\texttt{all\_to\_shortest}).}
+Each fractional job \(j \in F\) is assigned to the machine with the smallest current completion time.
+This greedy strategy exploits the symmetry of identical machines and incrementally balances the load.
+The resulting makespan defines the node upper bound \(\text{UB}\).
+
+\paragraph{First-machine assignment (\texttt{first\_machine}).}
+Each fractional job is assigned to the first machine it appears on in the fractional solution.
+This rule provides a simple, deterministic baseline and is primarily used for testing and comparison.
+
+\paragraph{Best matching (\texttt{best\_matching}).}
+When \(|F| \le m\), all possible assignments of the fractional jobs to machines are enumerated and the
+one minimising the resulting makespan is selected.
+Although exponential in \(|F|\), this strategy remains practical due to the small number of
+fractional jobs.
+
+\subsection{Stopping Criterion and Approximation Guarantee}
+\label{subsec:identical-stopping}
+
+In the absence of profiling, the stopping criterion coincides with the standard relative gap condition:
+\[
+  \frac{\text{LUB}}{\text{LLB}} < 1 + \varepsilon,
+\]
+which guarantees a \((1+\varepsilon)\)-approximate solution.
+
+When profiling is enabled, additional pruning is performed based on profile equivalence.
+As prescribed by the reference paper, this introduces an extra approximation factor, which must be
+accounted for in the termination condition.
+Accordingly, the algorithm is allowed to terminate when
+\[
+  \frac{\text{LUB}}{\text{LLB}} < (1 + \varepsilon)^2.
+\]
+
+For the same input value of \(\varepsilon\), this condition admits a larger relative optimality gap
+than in the non-profiling case.
+The relaxed stopping criterion compensates for the approximation introduced by profile-based pruning
+and ensures that the final solution satisfies the approximation bound established in the paper.
+
+\subsection{Profiling-Based Prioritisation and Pruning}
+\label{subsec:profiling}
+
+Profiling is introduced to reduce the effective search space by identifying nodes that induce
+similar load distributions.
+Each node is associated with a \emph{profile key} that abstracts the distribution of machine loads
+induced by large jobs.
+
+\subsubsection{Profiling modes}
+
+Three profiling modes are supported:
+\begin{itemize}
+  \item \texttt{NO\_PROFILING}: profiling is disabled.
+  \item \texttt{PRIORITY}: nodes without a previously seen profile are prioritised in the queue.
+  \item \texttt{PRUNE}: nodes whose profile matches one already seen at the same depth are discarded.
+\end{itemize}
+
+\subsubsection{Normalization and big jobs}
+
+Let
+\[
+  T_{\text{norm}} = \frac{1}{m} \sum_j p_j
+\]
+denote the normalization scale.
+A job \(j\) is classified as \emph{big} if its processing time is significant with respect to the
+normalization scale, namely if
+\[
+  p_j \ge \varepsilon \cdot T_{\text{norm}}.
+\]
+This threshold follows the PTAS framework for identical machines, where jobs smaller than
+\(\varepsilon \cdot T_{\text{norm}}\) are treated as negligible at the chosen approximation scale.
+Accordingly, only the contribution of big jobs is considered when computing profiling information.
+
+For implementation efficiency, each node explicitly stores, in addition to the total machine
+loads \(h\), a separate vector \(h^{\text{big}} \in \mathbb{R}^m\) containing only the load
+contribution of big jobs.
+This vector is incrementally updated during branching and is used exclusively for profiling,
+so that profile computation does not require recomputing or filtering job assignments.
+
+\subsubsection{Geometric binning}
+
+Machine loads are normalized by \(T_{\text{norm}}\) and discretized using a geometric grid:
+\[
+  0, \varepsilon, \varepsilon(1+\varepsilon), \varepsilon(1+\varepsilon)^2, \dots, 2(1+\varepsilon)^2.
+\]
+This discretization preserves relative load differences while tolerating small perturbations,
+as required by the PTAS framework.
+
+\subsubsection{Construction of profile keys}
+\label{subsec:profile-keys}
+
+For each node, profiling is based on the distribution of machine loads induced by big jobs only.
+Let \(h^{\text{big}} \in \mathbb{R}^m\) denote the vector of machine loads obtained by summing only the
+processing times of big jobs assigned to each machine.
+
+Each component is normalized as
+\[
+  \tilde{h}_i = \frac{h^{\text{big}}_i}{T_{\text{norm}}}.
+\]
+The normalized loads are then mapped to the geometric bins, and a histogram over all machines is
+constructed.
+This histogram constitutes the \emph{profile key} of the node.
+
+\subsubsection{Profile comparison and depth-based equivalence}
+\label{subsec:profile-comparison}
+
+Two nodes are considered \(\varepsilon\)-equivalent if they:
+\begin{itemize}
+  \item occur at the same depth in the branch-and-bound tree, and
+  \item share the same profile key.
+\end{itemize}
+
+The implementation maintains, for each depth, a set of profile keys that have already been observed.
+When a new node is generated, its profile key is computed and compared against this set.
+If an identical key is found, the node is marked as having a similar profile.
+
+\begin{algorithm}[H]
+\caption{Profiling and equivalence detection}
+\label{alg:profiling}
+\begin{algorithmic}[1]
+\Require node with big-job overhead \(h^{\text{big}}\) at depth \(d\)
+\State normalize loads: \(\tilde{h}_i \gets h^{\text{big}}_i / T_{\text{norm}}\)
+\State discretize \(\tilde{h}_i\) using geometric bins
+\State construct histogram \(K\)
+\If{\(K\) already seen at depth \(d\)}
+  \State mark node as having similar profile
+\Else
+  \State store \(K\) as seen at depth \(d\)
+\EndIf
+\end{algorithmic}
+\end{algorithm}
+
+Depending on the selected profiling mode, this information is used either to deprioritize the node
+in the priority queue or to discard it entirely before insertion.
 
 \section{Generazione istanze}
+
 
 \section{Analisi dei dati}
