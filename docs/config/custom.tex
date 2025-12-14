@@ -13,16 +13,29 @@
 \usepackage{enumitem}
 \setlist[itemize]{noitemsep, nolistsep}
 
+% Prevent LaTeX from adding extra space between paragraphs
+% and between pages (disable vertical justification)
+\raggedbottom
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%   COMMANDS                                           %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%% custom commands %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Custom commands %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newcommand{\todo}[1]{\textcolor{red}{#1}}
+\newcommand{\algcomment}[1]{$\triangleright$ \emph{#1}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%% \chapter %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Color definitions %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\colorlet{mypink}{red!40}
+\colorlet{myblue}{cyan!60}
+\colorlet{mygreen}{green!40}
+\colorlet{myyellow}{yellow!40}
+\colorlet{mygray}{black!20}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%% Chapter %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \usepackage{titlesec}
 \titleformat
 {\chapter} % command
@@ -32,3 +45,22 @@
 {1.5ex} % sep
 {} % before-code
 %[] % after-code
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%% Boxed comments in algorithms %%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{tikz}
+\usetikzlibrary{fit,calc}
+%define a marking command
+\newcommand*{\tikzmk}[1]{\tikz[remember picture,overlay,] \node (#1) {};\ignorespaces}
+%define a boxing command, argument = colour of box
+\newcommand{\boxit}[1]{\tikz[remember picture,overlay]{
+    \path let \p1=(A), \p2=(B) in 
+    node[fill=#1,opacity=.25,fit={($(\x1-3pt,\y1+0.4\baselineskip)$)($(\x2+10pt,\y2)$)}] {};}\ignorespaces}
+%define some colours according to algorithm parts (or any other method you like)
+
+%usage:
+%place \tikzmk{A} before the part to box
+%place \tikzmk{B} after the part to box
+%place \boxit{<colour>} after \tikzmk{B} to draw the box
+%example: \tikzmk{A} ... \tikzmk{B} \boxit{mypink}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
