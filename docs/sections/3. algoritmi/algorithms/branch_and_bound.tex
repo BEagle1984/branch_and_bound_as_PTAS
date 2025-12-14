@@ -5,51 +5,105 @@ The Branch-and-Bound method is used to solve NP-hard problems. The algorithm sys
 
 From the brief description above, we can identify three main components of Branch-and-Bound:
 \begin{itemize}
-  \item \textbf{Branching}: The division of the problem into smaller subproblems. In the context of the scheduling problem, this could involve deciding to assign a specific job to a specific machine.
+  \item \textbf{Branching}: The division of the problem into smaller subproblems. In our context, this means to assign a specific job to a specific machine. We will refer to this as \emph{fixing} a job to a machine.
   \item \textbf{Bounding}: The calculation of lower and upper bounds for each subproblem. These bounds help determine whether a subproblem can be discarded (pruning) or if it should be further explored.
   \item \textbf{Selection/Search}: The strategy used to select which subproblem to explore next. This can be done using different strategies, such as depth-first or breadth-first.
 \end{itemize}
 
 To better understand the algorithm's flow and its application to the scheduling problem, we delve into its specific characteristics in the next section.
 
-\subsection{Algorithm deeper dive}
-The Branch-and-Bound algorithm has some specific characteristics that are worth exploring in more detail. The pseudo-code provided below illustrates them, and aims to ease the understanding of the algorithm's flow.
 
-\todo{TODO: Current pseudo-code is very generic, needs details specific to our problem (e.g. how to branch, how to bound, etc.)}
+\subsection{Mathematical Formulation}
+To precisely describe the Branch-and-Bound algorithm for the identical machines scheduling problem, we introduce the following mathematical notation:
+\begin{itemize}
+    \item $x_{ji} \in [0,1]$ indicates the fraction of job $j$ assigned to machine $i$
+    \item $F \subseteq \{1,\ldots,n\} \times \{1,\ldots,m\}$ is the set of fixed assignments at a given node
+    \item For a node with fixed assignments $F$, the residual problem considers only the unfixed jobs
+    \item $LB(F)$ is the lower bound on the makespan for the subproblem with fixed assignments $F$
+    \item $UB(F)$ is the upper bound on the makespan obtained by rounding a fractional solution
+    \item $\text{GLB}, \text{GUB}$ are the global lower and upper bounds on the optimal makespan
+\end{itemize}
+
+The algorithm maintains the following invariant: at any point during execution, the optimal makespan $C^*$ satisfies:
+\begin{equation}
+\text{GLB} \leq C^* \leq \text{GUB}
+\end{equation}
 
 \begin{algorithm}[H]
-\KwIn{Instance of the scheduling problem}
-\KwOut{Optimal job-machine assignment minimizing the makespan}
-Initialize the best solution found so far $C_{best} \leftarrow \infty$\;
-Initialize the root node representing the entire problem\;
-Create a priority queue to manage nodes to explore\;
-Add the root node to the queue\;
-\While{the queue is not empty}{
-    Select and remove a node from the queue based on the search strategy\;
-    \eIf{the node represents a complete solution}{
-        \If{the solution's cost $C_{node} < C_{best}$}{
-            Update the best solution found so far $C_{best} \leftarrow C_{node}$\;
-        }
-    }{
-        Generate child nodes by branching on possible job-machine assignments\;
-        \ForEach{child node}{
-            Calculate lower bound $LB_{child}$ for the child node\;
-            \eIf{$LB_{child} < C_{best}$}{
-                Add the child node to the queue for further exploration\;
-            }{
-                Prune the child node (do not add it to the queue)\;
+\KwIn{Instance with $n$ jobs, processing times $p_1, \ldots, p_n$, and $m$ identical machines}
+\KwOut{Job-machine assignment minimizing makespan with quality guarantee $(1+\varepsilon)$}
+
+\tikzmk{A}\algcomment{Initialization}\tikzmk{B}\boxit{mygray}\\
+Solve relaxed problem for root node $F = \emptyset$ to obtain lower bound $LB(\emptyset)$\;
+Round fractional solution to obtain feasible assignment with upper bound $UB(\emptyset)$\;
+Initialize queue $\mathcal{Q} \leftarrow \{(\emptyset, LB(\emptyset))\}$\;
+Set global bounds: $\text{GLB} \leftarrow LB(\emptyset)$, $\text{GUB} \leftarrow UB(\emptyset)$\;
+\BlankLine
+\While{$\mathcal{Q} \neq \emptyset$ and $\frac{\text{GUB}}{\text{GLB}} \geq 1 + \varepsilon$}{
+    \tikzmk{A}\algcomment{Selection}\tikzmk{B}\boxit{mygray}\\
+    Select node $(F, LB(F))$ from $\mathcal{Q}$ according to search strategy\;
+    
+    \BlankLine
+    \tikzmk{A}\algcomment{Branching}\tikzmk{B}\boxit{mygray}\\
+    Choose fractional job $j^* \in \{1,\ldots,n\} \setminus \{j : (j,i) \in F \text{ for some } i\}$\;
+    
+    \BlankLine
+    \tikzmk{A}\algcomment{Bounding and Pruning}\tikzmk{B}\boxit{mygray}\\
+    \ForEach{machine $i \in \{1,\ldots,m\}$}{
+        Construct child node $F' \leftarrow F \cup \{(j^*, i)\}$\;
+        
+        \eIf{$|F'| = n$}{
+            Compute makespan $C(F')$ of complete assignment $F'$\;
+            \If{$C(F') < \text{GUB}$}{
+                $\text{GUB} \leftarrow C(F')$\;
+            }
+        }{
+            Solve relaxed problem for $F'$ to obtain $LB(F')$\;
+            \If{$LB(F') < \text{GUB}$}{
+                Round to obtain feasible solution with $UB(F')$\;
+                $\text{GUB} \leftarrow \min\{\text{GUB}, UB(F')\}$\;
+                Add $(F', LB(F'))$ to $\mathcal{Q}$\;
             }
         }
     }
+    
+    \BlankLine
+    \tikzmk{A}\algcomment{Update global lower bound}\tikzmk{B}\boxit{mygray}\\
+    $\text{GLB} \leftarrow \min\{\text{GUB}, \min_{(F,LB(F)) \in \mathcal{Q}} LB(F)\}$\;
 }
-\Return{the best solution found $C_{best}$}\;
-\caption{Branch-and-Bound Algorithm for the identical machines scheduling problem}
+\BlankLine
+\Return{Best assignment found with makespan $\text{GUB}$}\;
+\caption{Branch-and-Bound for Identical Machines Scheduling}
 \end{algorithm}
 
 
-\subsection{Components details}
-\subsubsection{Lower bound calculation}
-\todo{TODO: Greedy approach...}
+\subsection{Key Mathematical Components}
 
-\subsection{Algorithm enhancement}
-\todo{TODO: Profiling...}
+\subsubsection{Lower Bound Computation}
+For a node with fixed assignments $F$, the lower bound $LB(F)$ is computed by solving a relaxed version of the scheduling problem where jobs can be fractionally split across machines. Let $o_i = \sum_{(j,i) \in F} p_j$ denote the overhead (total processing time already fixed) on machine $i$. The relaxed problem seeks to minimize:
+\begin{equation}
+\min_{x_{ji} \geq 0} \max_{i=1,\ldots,m} \left\{ o_i + \sum_{j \notin \{j' : (j',i') \in F\}} p_j \cdot x_{ji} \right\}
+\end{equation}
+subject to:
+\begin{equation}
+\sum_{i=1}^m x_{ji} = 1 \quad \forall j \notin \{j' : (j',i') \in F\}
+\end{equation}
+
+This can be efficiently solved using greedy allocation or binary search techniques.
+
+\subsubsection{Upper Bound via Rounding}
+Given a fractional solution $\{x_{ji}\}$ from the relaxed problem, an upper bound is obtained by converting it to a complete assignment. Since at most $m$ jobs can be fractionally assigned, these are rounded to integral assignments using a matching-based approach that minimizes the resulting makespan.
+
+\subsubsection{Pruning Criterion}
+A node $(F, LB(F))$ is pruned if:
+\begin{equation}
+LB(F) \geq \text{GUB}
+\end{equation}
+This ensures that the subtree rooted at this node cannot contain a better solution than the current best.
+
+\subsubsection{Termination Condition}
+The algorithm terminates when the approximation guarantee is satisfied:
+\begin{equation}
+\frac{\text{GUB}}{\text{GLB}} < 1 + \varepsilon
+\end{equation}
+At termination, the solution with makespan $\text{GUB}$ is guaranteed to be within a factor of $(1+\varepsilon)$ of the optimal makespan $C^*$.
