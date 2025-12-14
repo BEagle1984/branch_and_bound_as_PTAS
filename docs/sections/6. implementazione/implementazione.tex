@@ -460,7 +460,73 @@ If an identical key is found, the node is marked as having a similar profile.
 Depending on the selected profiling mode, this information is used either to deprioritize the node
 in the priority queue or to discard it entirely before insertion.
 
-\section{Generazione istanze}
+\section{Flexible Instance Generation and Experimental Configuration}
+\label{subsec:instance-generation}
 
+The inherited experimental setup allowed testing multiple problem sizes by specifying
+pairs \((n_{\text{jobs}}, n_{\text{machines}})\) and iterating over a fixed range of random seeds.
+While sufficient for basic validation, this approach provided limited flexibility when
+exploring the behaviour of the algorithm under different parameter combinations.
 
-\section{Analisi dei dati}
+To support a more systematic and exploratory experimental analysis, the instance-generation
+pipeline was extended to decouple \emph{instance specification} from \emph{algorithmic configuration}.
+In the revised setup, an experiment is defined by explicitly pairing a concrete problem instance
+with a specific set of algorithmic parameters.
+
+More precisely, each experiment is characterized by:
+\begin{itemize}
+  \item the number of machines and jobs,
+  \item the distribution and range of processing times,
+  \item the random seed used to generate a concrete realization,
+  \item and the algorithmic configuration under which the instance is evaluated
+        (including profiling mode, bounding strategy, branching rule, rounding rule,
+        node selection strategy, and tolerance~\(\varepsilon\)).
+\end{itemize}
+
+This separation enables fine-grained control over the experimental space.
+The same instance can be evaluated under multiple algorithmic variants, and conversely,
+specific configurations can be restricted to carefully selected families of instances.
+This flexibility proved essential during the exploratory phase of the project, allowing
+the identification of meaningful parameter ranges and combinations worthy of deeper analysis.
+
+In addition, to reduce computational overhead and enable large-scale testing,
+exact optimal solutions were no longer computed for every instance.
+Instead, the fractional optimum for identical machines,
+given by \(\sum_j p_j / m\), was used as a consistent baseline for performance evaluation.
+This choice is sufficient for measuring approximation quality and aligns with the
+theoretical framework of the PTAS, while significantly improving experimental throughput.
+
+Finally, this setup made it possible to directly compare configurations with and without
+profiling under comparable approximation guarantees.
+Since profiling introduces a more relaxed stopping condition, non-profiling configurations
+were evaluated using a correspondingly adjusted tolerance, ensuring that all comparisons
+refer to equivalent approximation levels.
+
+\section{Analysis and Data Exploration Pipeline}
+\label{subsec:analysis-pipeline}
+
+All experimental runs were automatically logged into structured \texttt{CSV} files, with each row corresponding
+to a single execution of the branch-and-bound algorithm under a specific instance--configuration pair.
+The recorded data include instance characteristics, algorithmic parameters, runtime statistics,
+search metrics (e.g.\ explored nodes, depth), and solution quality indicators.
+
+To analyse and interpret these results, a set of Python notebooks was developed.
+These notebooks served as an exploratory and analytical layer on top of the raw experimental data,
+supporting data filtering, aggregation, visualization, and comparison across configurations.
+Standard data-analysis libraries were used to load the \texttt{CSV} files, manipulate the datasets,
+and generate plots illustrating trends and performance trade-offs.
+
+The notebooks were primarily used for two purposes.
+First, they enabled an exploratory analysis phase, during which significant ranges of parameters
+(e.g.\ tolerance~\(\varepsilon\), instance sizes, and profiling modes) were identified.
+This phase guided the selection of meaningful experimental configurations and helped exclude
+combinations that were either uninformative or computationally impractical.
+
+Second, once the experimental scope was consolidated, the same analysis pipeline was used to
+produce the plots and summary statistics presented in Chapter~\ref{sec:analysis}.
+In this phase, the notebooks acted as a reproducible tool for aggregating results and visualizing
+the impact of profiling, tolerance levels, and instance scale on both runtime and solution quality.
+
+The separation between raw data collection and analysis ensured that experimental results could be
+re-examined, filtered, and visualized without rerunning the computationally expensive experiments,
+and facilitated an iterative workflow between experimentation and analysis.
