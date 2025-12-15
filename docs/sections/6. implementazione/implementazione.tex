@@ -58,38 +58,60 @@ In practice, an additional limit on the maximum number of explored nodes may be 
 \begin{algorithm}[H]
 \caption{Branch-and-bound framework (unrelated machines scheduling)}
 \label{alg:bb-framework}
-\begin{algorithmic}[1]
-\Require instance $p_{j,i}$, tolerance $\varepsilon$; strategies for node selection, bounding, branching, rounding
-\State $(X^{\text{frac}}, \text{LB}) \gets \texttt{LowerBound}(p, h{=}0, \texttt{fixed}{=}\emptyset)$
-\If{$X^{\text{frac}}$ is integral} \Return $(X^{\text{frac}}, \text{LB})$ \EndIf
-\State $(X^{\star}, \text{LUB}) \gets \texttt{Rounding}(X^{\text{frac}}, \emptyset)$
-\State Initialize queue $Q$ with root node $(\texttt{fixed}{=}\emptyset,\ h{=}0,\ X^{\text{frac}},\ \text{LB})$
-\State $\text{LLB} \gets \text{LB}$
-\While{$Q \neq \emptyset$}
-  \State $\text{LLB} \gets \min(\text{LUB},\ \min_{N \in Q} N.\text{LB})$
-  \If{$\text{LUB}/\text{LLB} < 1+\varepsilon$} \textbf{break} \EndIf
-  \State Extract node $N$ from $Q$ according to the node selection strategy
-  \State Select a fractional job $j$ from $N.X^{\text{frac}}$ (branching rule)
-  \For{$q \in \{0,\dots,m-1\}$} \Comment{create child by fixing $(j,q)$}
-    \State $\texttt{fixed}' \gets N.\texttt{fixed} \cup \{(j,q)\}$, \quad $h' \gets N.h$ with $h'_q \gets h_q + p_{j,q}$
-    \If{$\texttt{fixed}'$ assigns all jobs}
-      \State $\text{UB}' \gets \max_i h'_i$
-      \If{$\text{UB}' < \text{LUB}$} $(X^{\star}, \text{LUB}) \gets (\texttt{fixed}', \text{UB}')$ \EndIf
-      \State \textbf{continue}
-    \EndIf
-    \State $(X^{\text{frac}\prime}, \text{LB}') \gets \texttt{LowerBound}(p, h', \texttt{fixed}')$
-    \If{$\text{LB}' \ge \text{LUB}$} \textbf{continue} \Comment{prune by bound} \EndIf
-    \If{$X^{\text{frac}\prime}$ is integral}
-      \If{$\text{LB}' < \text{LUB}$} $(X^{\star}, \text{LUB}) \gets (X^{\text{frac}\prime}, \text{LB}')$ \EndIf
-      \State \textbf{continue}
-    \EndIf
-    \State $(X^{\text{int}\prime}, \text{UB}') \gets \texttt{Rounding}(X^{\text{frac}\prime}, \texttt{fixed}')$
-    \If{$\text{UB}' < \text{LUB}$} $(X^{\star}, \text{LUB}) \gets (X^{\text{int}\prime}, \text{UB}')$ \EndIf
-    \State Insert child node $(\texttt{fixed}', h', X^{\text{frac}\prime}, \text{LB}')$ into $Q$
-  \EndFor
-\EndWhile
-\State \Return $(X^{\star}, \text{LUB})$
-\end{algorithmic}
+\KwIn{instance $p_{j,i}$, tolerance $\varepsilon$; strategies for node selection, bounding, branching, rounding}
+\KwOut{best solution $X^\star$ and its objective value $\mathrm{LUB}$}
+
+$(X^{\text{frac}}, \mathrm{LB}) \gets \texttt{LowerBound}(p, h{=}0, \texttt{fixed}{=}\emptyset)$\;
+\If{$X^{\text{frac}}$ is integral}{
+  \Return $(X^{\text{frac}}, \mathrm{LB})$\;
+}
+$(X^{\star}, \mathrm{LUB}) \gets \texttt{Rounding}(X^{\text{frac}}, \emptyset)$\;
+
+Initialize queue $Q$ with root node $(\texttt{fixed}{=}\emptyset,\ h{=}0,\ X^{\text{frac}},\ \mathrm{LB})$\;
+$\mathrm{LLB} \gets \mathrm{LB}$\;
+
+\While{$Q \neq \emptyset$}{
+  $\mathrm{LLB} \gets \min(\mathrm{LUB},\ \min_{N \in Q} N.\mathrm{LB})$\;
+  \If{$\mathrm{LUB}/\mathrm{LLB} < 1+\varepsilon$}{
+    \textbf{break}\;
+  }
+
+  Extract node $N$ from $Q$ according to the node selection strategy\;
+  Select a fractional job $j$ from $N.X^{\text{frac}}$ (branching rule)\;
+
+  \For{$q \in \{0,\dots,m-1\}$}{
+    $\texttt{fixed}' \gets N.\texttt{fixed} \cup \{(j,q)\}$ \tcp*[l]{create child by fixing $(j,q)$}
+    $h' \gets N.h$ with $h'_q \gets h_q + p_{j,q}$\;
+
+    \If{$\texttt{fixed}'$ assigns all jobs}{
+      $\mathrm{UB}' \gets \max_i h'_i$\;
+      \If{$\mathrm{UB}' < \mathrm{LUB}$}{
+        $(X^{\star}, \mathrm{LUB}) \gets (\texttt{fixed}', \mathrm{UB}')$\;
+      }
+      \textbf{continue}\;
+    }
+
+    $(X^{\text{frac}\prime}, \mathrm{LB}') \gets \texttt{LowerBound}(p, h', \texttt{fixed}')$\;
+    \If{$\mathrm{LB}' \ge \mathrm{LUB}$}{
+      \textbf{continue} \tcp*[l]{prune by bound}
+    }
+
+    \If{$X^{\text{frac}\prime}$ is integral}{
+      \If{$\mathrm{LB}' < \mathrm{LUB}$}{
+        $(X^{\star}, \mathrm{LUB}) \gets (X^{\text{frac}\prime}, \mathrm{LB}')$\;
+      }
+      \textbf{continue}\;
+    }
+
+    $(X^{\text{int}\prime}, \mathrm{UB}') \gets \texttt{Rounding}(X^{\text{frac}\prime}, \texttt{fixed}')$\;
+    \If{$\mathrm{UB}' < \mathrm{LUB}$}{
+      $(X^{\star}, \mathrm{LUB}) \gets (X^{\text{int}\prime}, \mathrm{UB}')$\;
+    }
+
+    Insert child node $(\texttt{fixed}', h', X^{\text{frac}\prime}, \mathrm{LB}')$ into $Q$\;
+  }
+}
+\Return $(X^{\star}, \mathrm{LUB})$\;
 \end{algorithm}
 
 Algorithm~\ref{alg:bb-framework} summarises the inherited branch-and-bound framework used for the unrelated machines scheduling problem.
@@ -303,21 +325,24 @@ the rounding strategies used in the framework.
 \begin{algorithm}[H]
 \caption{Greedy fractional bound for identical machines}
 \label{alg:greedy-bound}
-\begin{algorithmic}[1]
-\Require processing times \(p_j\), overhead \(h\), number of machines \(m\)
-\State \(C_{\max} \gets \frac{1}{m} \sum_j p_j\)
-\State \(C_i \gets h_i\) for all machines \(i\)
-\For{each unfixed job \(j\)}
-  \State \(r \gets p_j\)
-  \While{\(r > 0\)}
-    \State select a machine \(i\) with \(C_i < C_{\max}\)
-    \State \(\delta \gets \min(r, C_{\max} - C_i)\)
-    \State assign fraction \(\delta / p_j\) of job \(j\) to machine \(i\)
-    \State \(C_i \gets C_i + \delta\), \(r \gets r - \delta\)
-  \EndWhile
-\EndFor
-\State \Return fractional assignment and makespan \(\max_i C_i\)
-\end{algorithmic}
+\KwIn{processing times $p_j$, overhead $h$, number of machines $m$}
+\KwOut{fractional assignment and its makespan}
+
+$C_{\max} \gets \frac{1}{m}\sum_j p_j$\;
+$C_i \gets h_i \quad \forall i \in \{0,\dots,m-1\}$\;
+
+\For{each unfixed job $j$}{
+  $r \gets p_j$\;
+  \While{$r > 0$}{
+    Select a machine $i$ with $C_i < C_{\max}$\;
+    $\delta \gets \min(r,\ C_{\max} - C_i)$\;
+    Assign fraction $\delta / p_j$ of job $j$ to machine $i$\;
+    $C_i \gets C_i + \delta$\;
+    $r \gets r - \delta$\;
+  }
+}
+
+\Return fractional assignment and makespan $\max_i C_i$\;
 \end{algorithm}
 
 \subsection{Rounding Strategies for Identical Machines}
@@ -332,16 +357,12 @@ Let \(F\) denote the set of fractional jobs.
 Each fractional job \(j \in F\) is assigned to the machine with the smallest current completion time.
 This greedy strategy exploits the symmetry of identical machines and incrementally balances the load.
 The resulting makespan defines the node upper bound \(\text{UB}\).
+This strategy is simple and efficient, providing a reasonable approximation in practice.
+It is the default rounding method we used throughout the experiments and in our analysis.
 
 \paragraph{First-machine assignment (\texttt{first\_machine}).}
 Each fractional job is assigned to the first machine it appears on in the fractional solution.
 This rule provides a simple, deterministic baseline and is primarily used for testing and comparison.
-
-\paragraph{Best matching (\texttt{best\_matching}).}
-When \(|F| \le m\), all possible assignments of the fractional jobs to machines are enumerated and the
-one minimising the resulting makespan is selected.
-Although exponential in \(|F|\), this strategy remains practical due to the small number of
-fractional jobs.
 
 \subsection{Stopping Criterion and Approximation Guarantee}
 \label{subsec:identical-stopping}
@@ -444,17 +465,19 @@ If an identical key is found, the node is marked as having a similar profile.
 \begin{algorithm}[H]
 \caption{Profiling and equivalence detection}
 \label{alg:profiling}
-\begin{algorithmic}[1]
-\Require node with big-job overhead \(h^{\text{big}}\) at depth \(d\)
-\State normalize loads: \(\tilde{h}_i \gets h^{\text{big}}_i / T_{\text{norm}}\)
-\State discretize \(\tilde{h}_i\) using geometric bins
-\State construct histogram \(K\)
-\If{\(K\) already seen at depth \(d\)}
-  \State mark node as having similar profile
-\Else
-  \State store \(K\) as seen at depth \(d\)
-\EndIf
-\end{algorithmic}
+\KwIn{node with big-job overhead $h^{\text{big}}$ at depth $d$}
+
+Normalize loads: $\tilde{h}_i \gets h^{\text{big}}_i / T_{\text{norm}}$\;
+Discretize $\tilde{h}_i$ using geometric bins\;
+Construct histogram $K$\;
+
+\If{$K$ already seen at depth $d$}{
+  Mark node as having similar profile\;
+}
+\Else{
+  Store $K$ as seen at depth $d$\;
+}
+
 \end{algorithm}
 
 Depending on the selected profiling mode, this information is used either to deprioritize the node
