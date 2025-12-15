@@ -1,9 +1,41 @@
-\chapter{Metodologia di lavoro}
+\chapter{Methodology}
 
-\begin{itemize}
-    \item Suddivisione dei compiti
-    \item Pianificazione e Task
-    \item Pair programming / brainstorming
-    \item Weekly
-    \item Raccolta dei dati
-\end{itemize}
+This chapter describes the collaborative approach adopted throughout the project. Given the modest scope of the work, both team members were involved in all aspects, with small task divisions made primarily to improve efficiency and ensure comprehensive coverage.
+
+\section{Division of responsibilities}
+
+The project was approached collaboratively, with both team members working together on all major components. While we jointly addressed the theoretical foundation, algorithm design, and implementation, we occasionally divided smaller tasks to work in parallel and increase efficiency.
+
+For example, when implementing the problem variant (identical job scheduling), we would sometimes work on different parametrizations simultaneously, then review and discuss each other's work to ensure consistency and share insights.
+
+This approach provided natural redundancy and allowed us to catch potential issues early through continuous peer review.
+
+\section{Planning and task management}
+
+The project was organized into basic phases: initial research and problem study, algorithm design, implementation, experimental evaluation, and documentation. We maintained a simple timeline with key milestones to track progress.
+
+Task management was kept lightweight, using Git for version control and informal tracking of what needed to be done. We prioritized understanding the theoretical framework before implementation to ensure our algorithms were correctly designed.
+
+The development followed an iterative approach, refining implementations based on experimental results and discussions about observed performance.
+
+\section{Pair programming and brainstorming}
+
+Most of the work was done collaboratively through frequent discussions and pair programming sessions. This was particularly helpful when tackling complex aspects like designing the profiling algorithm.
+
+We regularly discussed trade-offs between solution quality and computational efficiency, especially when balancing greedy heuristics with exact methods. Having two perspectives helped us identify issues and find better solutions.
+
+\section{Weekly progress meetings}
+
+Weekly meetings with our relators were held throughout the project to discuss progress, present findings, and receive guidance on both theoretical and practical aspects. These sessions were helpful for ensuring the work remained on track and aligned with academic standards.
+
+During these meetings, we presented experimental results, discussed implementation challenges, and received valuable feedback that helped shape our approach. The relators' expertise was particularly helpful in validating our algorithmic choices and suggesting areas for deeper investigation.
+
+These regular checkpoints also served as opportunities to clarify theoretical concepts, validate that our implementation was correct, and ensure our experimental methodology was rigorous and appropriate for the research objectives.
+
+\section{Data collection and analysis}
+
+Experimental data was collected across multiple problem instances with varying characteristics (problem size, machine counts, value distributions). We designed experiments to validate theoretical complexity bounds and measure practical performance.
+
+Instance generation was automated using Python scripts with controlled random seeds to ensure reproducibility. Results were logged in CSV format for easy analysis.
+
+We used Jupyter notebooks for data visualization and analysis, creating plots to understand algorithm behavior and performance trends. This helped us verify that the implementation met the theoretical guarantees and performed as expected.
