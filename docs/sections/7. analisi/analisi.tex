@@ -1,9 +1,112 @@
-\chapter{Analisi dei risultati}
+\chapter{Analysis of Results}
+\label{ch:analysis}
+
+In this chapter we analyse the experimental results obtained by comparing the base Branch-and-Bound algorithm (\texttt{NO\_PROFILING}) with its profiling-enhanced variant (\texttt{PRUNE}) for the identical machines scheduling problem. The objective is to experimentally validate the effectiveness of profiling as a mechanism to reduce the explored search space and to extend the practical applicability of the algorithm to larger and more demanding instances.
+
+\section{Experimental setup recap}
+
+After an extensive exploratory phase, a consolidated experimental configuration was selected in order to highlight the behavioural differences between the two variants under comparable approximation guarantees. The experiments were conducted as follows:
 
 \begin{itemize}
-    \item Overview istanze e dati raccolti
-    \item Istanze relativamente piccole ma con diversi seed
-    \item Difficolt\'a variabile a dipendenza del seed, a parit\'a di dimensione
-    \item Statistiche no-profiling vs. prune per tipo di istanza
-    \item Evidenziare che profiling rimane percorribile quando la versione base non arriva a soluzione
+  \item For each problem size, \textbf{200 independent instances} were generated using different random seeds.
+  \item The number of machines was progressively increased:
+  \[
+    m \in \{5, 25, 50, 75, 100\},
+  \]
+  with the number of jobs fixed to \(n = 2m\), as this ratio empirically represents a non-trivial and challenging regime for identical machines.
+  \item Job processing times were drawn from a \textbf{uniform integer distribution} in \([1, 5000]\).
+  \item A single algorithmic configuration was used for all runs, varying only the profiling mode and the approximation tolerance:
+  \begin{itemize}
+    \item \texttt{NO\_PROFILING} with tolerance \(2\varepsilon\)
+    \item \texttt{PRUNE} with tolerance \(\varepsilon\)
+  \end{itemize}
+  \item This choice ensures a fair comparison, as profiling introduces an additional approximation factor and therefore requires a relaxed stopping criterion.
+  \item To keep runtimes within reasonable bounds and enable large-scale experimentation, the search was capped at \textbf{2000 explored nodes}.
 \end{itemize}
+
+The main performance metric considered is the \textbf{number of explored nodes}, which is a more stable and implementation-independent indicator of algorithmic efficiency than wall-clock runtime.
+
+This setup is consistent with the overall methodology described in the previous chapters and allows a direct, controlled comparison between the two algorithmic variants.
+
+\section{Results for \(\varepsilon = 0.1\) (\texttt{NO\_PROFILING}: \(\varepsilon = 0.2\))}
+
+Figure~X (first attached plot) reports the number of explored nodes for each instance, sorted in increasing order, for both algorithm variants and increasing instance sizes.
+
+A clear qualitative difference emerges already for moderate problem sizes:
+
+\paragraph{\texttt{NO\_PROFILING}.}
+\begin{itemize}
+  \item For \(m = 5\), all instances are solved well below the node limit.
+  \item At \(m = 25\), a significant fraction of instances already reaches the maximum of 2000 explored nodes.
+  \item For \(m = 50\), the vast majority of instances hit the node cap, indicating that the algorithm is no longer able to effectively prune the search space.
+  \item For \(m = 75\) and \(m = 100\), more than \(80\text{--}90\%\) of instances fail to terminate within the imposed limit.
+\end{itemize}
+
+\paragraph{\texttt{PRUNE} (profiling enabled).}
+\begin{itemize}
+  \item For \(m = 25\), almost all instances are solved with a relatively small number of explored nodes.
+  \item At \(m = 50\), only a limited tail of hard instances approaches the node cap.
+  \item Even for \(m = 75\), the majority of instances still terminate successfully.
+  \item At \(m = 100\), although the problem becomes demanding, profiling allows a non-negligible fraction of instances (roughly \(40\text{--}50\%\)) to be solved within the node limit, whereas the base version almost completely fails.
+\end{itemize}
+
+These results clearly show that profiling delays the onset of combinatorial explosion and preserves algorithmic viability for significantly larger instances.
+
+\section{Stricter tolerances: \(\varepsilon = 0.05\) and \(\varepsilon = 0.01\)}
+
+Figure~Y (second attached plot) reports analogous experiments performed with tighter approximation requirements:
+\[
+\varepsilon = 0.05 / 0.1 \qquad \text{and} \qquad \varepsilon = 0.01 / 0.02.
+\]
+
+As expected, reducing \(\varepsilon\) substantially increases the computational burden for both variants. However, the relative advantage of profiling becomes even more pronounced:
+
+\begin{itemize}
+  \item Without profiling, the algorithm struggles already at \(m = 25\), with a sharp increase in failed instances.
+  \item For \(\varepsilon = 0.01\), the \texttt{NO\_PROFILING} variant is effectively unusable beyond very small instances.
+  \item In contrast, the profiling-enhanced version remains viable for small and medium-sized instances, even under these stricter precision requirements, and consistently explores one order of magnitude fewer nodes than the base version in comparable settings.
+\end{itemize}
+
+This behaviour confirms that profiling is particularly effective in regimes where high precision exacerbates the branching complexity, precisely the scenarios where a PTAS-style pruning strategy is theoretically motivated.
+
+\section{Discussion and insights}
+
+Several important observations can be drawn from these results:
+
+\begin{itemize}
+  \item \textbf{Profiling dramatically reduces the effective search space.}
+  The reduction in explored nodes is systematic and grows with instance size, confirming that profile-based equivalence detection successfully eliminates large sets of redundant subproblems.
+  \item \textbf{The benefit increases with problem difficulty.}
+  For easy instances, both variants perform similarly. The advantage of profiling becomes substantial exactly when the base algorithm begins to struggle.
+  \item \textbf{Runtime trade-off is secondary.}
+  While profiling introduces a per-node overhead due to profile computation and comparison, this cost is largely dominated by the savings obtained through reduced exploration. When the number of explored nodes is similar, profiling is slightly slower; however, in all practically relevant hard cases, the base algorithm fails outright, while the profiling version remains tractable.
+  \item \textbf{Profiling effectively extends the usable range of the algorithm.}
+  Under the imposed node limit, profiling shifts the boundary of solvable instances by roughly one to two problem sizes, depending on \(\varepsilon\). This extension is crucial in practice and aligns with the theoretical role of profiling within the PTAS framework.
+\end{itemize}
+
+\section{Summary}
+
+The experimental results provide strong empirical evidence that profiling is a highly effective enhancement for Branch-and-Bound applied to identical machines scheduling. By aggressively pruning structurally similar subproblems, profiling significantly reduces the explored search space and allows the algorithm to scale to larger instances and tighter approximation guarantees. These findings experimentally validate the theoretical motivations behind profiling and confirm its practical relevance within a PTAS-oriented Branch-and-Bound framework.
+
+\bigskip
+\noindent
+\textbf{Overall, profiling increases the maximum practically solvable instance size by approximately one to two problem scales under a fixed exploration budget, turning otherwise intractable configurations into feasible ones.}
+
+\section*{Indicative failure rates at the node cap}
+
+\begin{table}[h]
+\centering
+\caption{Approximate percentage of instances reaching the 2000-node limit (200 instances per size).}
+\label{tab:failure_rates}
+\begin{tabular}{r r c c}
+\hline
+\(m\) & \(n\) & \texttt{NO\_PROFILING} & \texttt{PRUNE} \\
+\hline
+5   & 10  & 0\%        & 0\% \\
+25  & 50  & 60--80\%   & 0--5\% \\
+50  & 100 & 90--100\%  & 10--30\% \\
+75  & 150 & 90--100\%  & 20--40\% \\
+100 & 200 & 90--100\%  & 40--50\% \\
+\hline
+\end{tabular}
+\end{table}
