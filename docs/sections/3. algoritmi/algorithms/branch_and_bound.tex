@@ -16,7 +16,7 @@ To better understand the algorithm's flow and its application to the scheduling 
 \subsection{Mathematical Formulation}
 To precisely describe the Branch-and-Bound algorithm for the identical machines scheduling problem, we introduce the following mathematical notation:
 \begin{itemize}
-    \item $x_{ji} \in [0,1]$ indicates the fraction of job $j$ assigned to machine $i$
+    \item $x_{j,i} \in [0,1]$ indicates the fraction of job $j$ assigned to machine $i$
     \item $F \subseteq \{1,\ldots,n\} \times \{1,\ldots,m\}$ is the set of fixed assignments at a given node
     \item For a node with fixed assignments $F$, the residual problem considers only the unfixed jobs
     \item $LB(F)$ is the lower bound on the makespan for the subproblem with fixed assignments $F$
@@ -82,17 +82,17 @@ Set global bounds: $\text{GLB} \leftarrow LB(\emptyset)$, $\text{GUB} \leftarrow
 \subsubsection{Lower Bound Computation}
 For a node with fixed assignments $F$, the lower bound $LB(F)$ is computed by solving a relaxed version of the scheduling problem where jobs can be fractionally split across machines. Let $o_i = \sum_{(j,i) \in F} p_j$ denote the overhead (total processing time already fixed) on machine $i$. The relaxed problem seeks to minimize:
 \begin{equation}
-\min_{x_{ji} \geq 0} \max_{i=1,\ldots,m} \left\{ o_i + \sum_{j \notin \{j' : (j',i') \in F\}} p_j \cdot x_{ji} \right\}
+\min_{x_{j,i} \geq 0} \max_{i=1,\ldots,m} \left\{ o_i + \sum_{j \notin \{j' : (j',i') \in F\}} p_j \cdot x_{j,i} \right\}
 \end{equation}
 subject to:
 \begin{equation}
-\sum_{i=1}^m x_{ji} = 1 \quad \forall j \notin \{j' : (j',i') \in F\}
+\sum_{i=1}^m x_{j,i} = 1 \quad \forall j \notin \{j' : (j',i') \in F\}
 \end{equation}
 
 This can be efficiently solved using greedy allocation or binary search techniques.
 
 \subsubsection{Upper Bound via Rounding}
-Given a fractional solution $\{x_{ji}\}$ from the relaxed problem, an upper bound is obtained by converting it to a complete assignment. Since at most $m$ jobs can be fractionally assigned, these are rounded to integral assignments using a matching-based approach that minimizes the resulting makespan.
+Given a fractional solution $\{x_{j,i}\}$ from the relaxed problem, an upper bound is obtained by converting it to a complete assignment. Since at most $m$ jobs can be fractionally assigned, these are rounded to integral assignments using a matching-based approach that minimizes the resulting makespan.
 
 \subsubsection{Pruning Criterion}
 A node $(F, LB(F))$ is pruned if:

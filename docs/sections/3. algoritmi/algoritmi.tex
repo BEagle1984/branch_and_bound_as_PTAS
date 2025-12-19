@@ -1,6 +1,16 @@
 \chapter{Algorithms}
 In this chapter, we aim to describe the theoretical aspects of the project, particularly the algorithms used to solve the scheduling problem addressed and the underlying mathematical concepts.
 
-\input{\currfiledir problem/introduction.tex}
+\section*{Notation}
+Unless stated otherwise, we use the following conventions in the theoretical chapters.
+
+\begin{itemize}
+  \item Machines are indexed by $i \in \{1,\dots,m\}$ and jobs by $j \in \{1,\dots,n\}$.
+  \item For unrelated machines, the processing time of job $j$ on machine $i$ is $p_{j,i}$.
+        For identical machines, we write $p_j$ (equivalently $p_{j,i}=p_j$ for all $i$).
+  \item Assignment variables are written as $x_{j,i}$. In relaxations, $x_{j,i}\in[0,1]$ and $\sum_{i=1}^m x_{j,i}=1$ for each job $j$.
+\end{itemize}
+
+\input{\currfiledir problem/introduction.tex}e
 \input{\currfiledir solution/approximation.tex}
 \input{\currfiledir algorithms/branch_and_bound.tex}
