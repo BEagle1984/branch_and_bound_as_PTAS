@@ -1,11 +1,20 @@
 \chapter{Implementation}
 
-\section{Architettura e struttura del codice}
-
-Still needed??
+\section*{Conventions}
+In the implementation, arrays are $0$-indexed (machines $i\in\{0,\dots,m-1\}$, jobs $j\in\{0,\dots,n-1\}$), whereas the mathematical notation in this report is $1$-indexed. To avoid ambiguity, we use:
+\begin{itemize}
+  \item In the reference Python implementation, the global bounds are stored in variables named \texttt{LLB} and \texttt{LUB}. In this report, we denote the same quantities by $\mathrm{GLB}$ and $\mathrm{GUB}$ to emphasize their global scope:
+  \[
+    \texttt{LLB} \equiv \mathrm{GLB}, \qquad \texttt{LUB} \equiv \mathrm{GUB}.
+  \]
+  \item Node-level bounds are denoted by $\mathrm{LB}(N)$ and $\mathrm{UB}(N)$, corresponding to the fields \texttt{Node.LB} and \texttt{Node.UB}.
+  \item \texttt{fixed} denotes the set of fixed assignments (corresponding to $F$ in the theoretical chapter).
+\end{itemize}
 
 \section{Branch-and-Bound}
 \label{sec:bb-framework}
+
+The theoretical foundations and correctness of the Branch-and-Bound algorithm are discussed in Section~3.3. In this section, we focus exclusively on its concrete implementation, data structures, and control flow.
 
 The implementation employed in this project is based on a branch-and-bound (B\&B) framework originally developed for the \emph{unrelated machines scheduling} problem.
 The same structure is later reused for the identical machines case, where only the lower-bound routines and selected optimisation components (such as profiling) are adapted, while the core branching, bounding, rounding, and node-selection logic is preserved.
@@ -15,7 +24,7 @@ The same structure is later reused for the identical machines case, where only t
 Each node of the branch-and-bound tree represents a subproblem corresponding to a partial assignment of jobs to machines and is characterised by:
 \begin{itemize}
   \item a set of fixed assignments \(\texttt{fixed} \subseteq \{0,\dots,n-1\} \times \{0,\dots,m-1\}\),
-  \item an overhead vector \(h \in \mathbb{R}^{m}\), where \(h_i\) denotes the load already assigned to machine \(i\),
+  \item an overhead vector $\mathbf{o} \in \mathbb{R}^m$, where $o_i$ denotes the load already assigned to machine $i$,
   \item a fractional solution \(X^{\text{frac}}\) obtained from a relaxation of the problem,
   \item a node lower bound \(\text{LB}\) and a node upper bound \(\text{UB}\),
   \item the depth of the node in the search tree.
@@ -25,6 +34,11 @@ For a given node, the lower bound \(\text{LB}\) denotes a valid lower bound on t
 
 The global state maintains a best-known feasible solution, represented by a global upper bound \(\text{LUB}\), and a global lower bound \(\text{LLB}\) derived from the set of active nodes in the search tree.
 More precisely, the global upper bound \(\text{LUB}\) corresponds to the makespan of the best feasible (integral) schedule found so far, while the global lower bound \(\text{LLB}\) is defined as the minimum lower bound among all active nodes in the priority queue.
+In the actual implementation, this value is additionally clamped by the current global upper bound for robustness. Concretely, the update rule is
+\[
+\mathrm{LLB} \gets \min\bigl(\mathrm{LUB}, \min_{N \in Q} \mathrm{LB}(N)\bigr),
+\]
+which ensures that the global lower bound never exceeds the incumbent solution value.
 
 \medskip
 The behaviour of the algorithm is governed by four main components.
@@ -71,7 +85,7 @@ Initialize queue $Q$ with root node $(\texttt{fixed}{=}\emptyset,\ h{=}0,\ X^{\t
 $\mathrm{LLB} \gets \mathrm{LB}$\;
 
 \While{$Q \neq \emptyset$}{
-  $\mathrm{LLB} \gets \min(\mathrm{LUB},\ \min_{N \in Q} N.\mathrm{LB})$\;
+  $\mathrm{LLB} \gets \min(\mathrm{LUB},\ \min_{N \in Q} N.\mathrm{LB})$ \tcp*[l]{clamp by LUB for robustness}
   \If{$\mathrm{LUB}/\mathrm{LLB} < 1+\varepsilon$}{
     \textbf{break}\;
   }
@@ -81,17 +95,17 @@ $\mathrm{LLB} \gets \mathrm{LB}$\;
 
   \For{$q \in \{0,\dots,m-1\}$}{
     $\texttt{fixed}' \gets N.\texttt{fixed} \cup \{(j,q)\}$ \tcp*[l]{create child by fixing $(j,q)$}
-    $h' \gets N.h$ with $h'_q \gets h_q + p_{j,q}$\;
+    $o' \gets N.h$ with $o'_q \gets o_q + p_{j,q}$\;
 
     \If{$\texttt{fixed}'$ assigns all jobs}{
-      $\mathrm{UB}' \gets \max_i h'_i$\;
+      $\mathrm{UB}' \gets \max_i o'_i$\;
       \If{$\mathrm{UB}' < \mathrm{LUB}$}{
         $(X^{\star}, \mathrm{LUB}) \gets (\texttt{fixed}', \mathrm{UB}')$\;
       }
       \textbf{continue}\;
     }
 
-    $(X^{\text{frac}\prime}, \mathrm{LB}') \gets \texttt{LowerBound}(p, h', \texttt{fixed}')$\;
+    $(X^{\text{frac}\prime}, \mathrm{LB}') \gets \texttt{LowerBound}(p, o', \texttt{fixed}')$\;
     \If{$\mathrm{LB}' \ge \mathrm{LUB}$}{
       \textbf{continue} \tcp*[l]{prune by bound}
     }
@@ -108,7 +122,7 @@ $\mathrm{LLB} \gets \mathrm{LB}$\;
       $(X^{\star}, \mathrm{LUB}) \gets (X^{\text{int}\prime}, \mathrm{UB}')$\;
     }
 
-    Insert child node $(\texttt{fixed}', h', X^{\text{frac}\prime}, \mathrm{LB}')$ into $Q$\;
+    Insert child node $(\texttt{fixed}', o', X^{\text{frac}\prime}, \mathrm{LB}')$ into $Q$\;
   }
 }
 \Return $(X^{\star}, \mathrm{LUB})$\;
@@ -133,7 +147,7 @@ The inherited implementation provides two alternative strategies to compute node
 Both operate on the subproblem defined by:
 \begin{itemize}
   \item the set of fixed assignments \(\texttt{fixed}\),
-  \item the overhead vector \(h \in \mathbb{R}^m\),
+  \item the overhead vector $\mathbf{o} \in \mathbb{R}^m$,
   \item the remaining unfixed jobs.
 \end{itemize}
 In both cases, the output consists of a fractional assignment \(X^{\text{frac}}\) and a scalar lower bound \(\text{LB}\).
@@ -146,10 +160,10 @@ The model can be expressed as:
   \min\ & C_{\max} \\
   \text{s.t. }
   & \sum_{i=0}^{m-1} x_{j,i} = 1 && \forall j \text{ unfixed}, \\
-  & \sum_{j \text{ unfixed}} p_{j,i} x_{j,i} \le C_{\max} - h_i && \forall i = 0,\dots,m-1, \\
+  & \sum_{j \text{ unfixed}} p_{j,i} x_{j,i} \le C_{\max} - o_i && \forall i = 0,\dots,m-1, \\
   & x_{j,i} \ge 0 && \forall j,i.
 \end{align*}
-The fixed jobs do not appear as decision variables; their contribution is encoded in the overhead \(h\).
+The fixed jobs do not appear as decision variables; their contribution is encoded in the overhead \(o\).
 The optimal value \(C_{\max}^{\star}\) is used as the node lower bound \(\text{LB}\), and the corresponding solution defines \(X^{\text{frac}}\).
 Due to the structure of the formulation, at most \(m\) jobs are fractional in the optimal solution.
 
@@ -159,8 +173,8 @@ An interval \((\ell, r]\) is maintained such that \(\ell\) is infeasible and \(r
 For a candidate makespan \(C\), a feasibility LP is solved with variables \(x_{j,i}\) for unfixed jobs, subject to:
 \begin{align*}
   & \sum_{i=0}^{m-1} x_{j,i} = 1 && \forall j \text{ unfixed}, \\
-  & \sum_{j \text{ unfixed}} p_{j,i} x_{j,i} \le C - h_i && \forall i = 0,\dots,m-1, \\
-  & x_{j,i} = 0 && \text{if } p_{j,i} > C - h_i, \\
+  & \sum_{j \text{ unfixed}} p_{j,i} x_{j,i} \le C - o_i && \forall i = 0,\dots,m-1, \\
+  & x_{j,i} = 0 && \text{if } p_{j,i} > C - o_i, \\
   & x_{j,i} \ge 0 && \text{otherwise}.
 \end{align*}
 If the LP is feasible, the value \(C\) becomes the new right endpoint; otherwise it becomes the new left endpoint.
@@ -173,8 +187,8 @@ The corresponding LP solution defines the fractional assignment \(X^{\text{frac}
 When the relaxation at a node yields a fractional solution \(X^{\text{frac}}\), a deterministic rounding procedure is applied to construct a feasible integer assignment.
 The resulting schedule defines a node upper bound \(\text{UB}\), which may improve the current global upper bound \(\text{LUB}\).
 
-The rounding implementation operates on the subproblem defined by the fixed assignments \(\texttt{fixed}\) and the overhead vector \(h \in \mathbb{R}^m\).
-Jobs already fixed do not appear as decision variables; their contribution is accounted for by the overhead values \(h_i\).
+The rounding implementation operates on the subproblem defined by the fixed assignments \(\texttt{fixed}\) and the overhead vector \(o \in \mathbb{R}^m\).
+Jobs already fixed do not appear as decision variables; their contribution is accounted for by the overhead values \(o_i\).
 Moreover, jobs that are already integrally assigned in \(X^{\text{frac}}\) are preserved.
 
 Let \(F\) denote the set of \emph{fractional jobs}, i.e., those jobs \(j\) such that \(x_{j,i}\) is non-integer for at least one machine \(i\).
@@ -311,7 +325,7 @@ assignments and machine loads, and fills the remaining capacity up to \(C_{\max}
 
 The procedure operates as follows:
 \begin{itemize}
-  \item The current machine loads induced by fixed jobs are stored in an overhead vector \(h\).
+  \item The current machine loads induced by fixed jobs are stored in an overhead vector \(o\).
   \item Unfixed jobs are processed sequentially.
   \item Each job is fractionally assigned to machines whose current load is below
         \(C_{\max}^{\text{frac}}\), until its processing time is fully distributed.
@@ -329,7 +343,7 @@ the rounding strategies used in the framework.
 \KwOut{fractional assignment and its makespan}
 
 $C_{\max} \gets \frac{1}{m}\sum_j p_j$\;
-$C_i \gets h_i \quad \forall i \in \{0,\dots,m-1\}$\;
+$C_i \gets o_i \quad \forall i \in \{0,\dots,m-1\}$\;
 
 \For{each unfixed job $j$}{
   $r \gets p_j$\;
@@ -420,7 +434,7 @@ This threshold follows the PTAS framework for identical machines, where jobs sma
 Accordingly, only the contribution of big jobs is considered when computing profiling information.
 
 For implementation efficiency, each node explicitly stores, in addition to the total machine
-loads \(h\), a separate vector \(h^{\text{big}} \in \mathbb{R}^m\) containing only the load
+loads \(o\), a separate vector \(o^{\text{big}} \in \mathbb{R}^m\) containing only the load
 contribution of big jobs.
 This vector is incrementally updated during branching and is used exclusively for profiling,
 so that profile computation does not require recomputing or filtering job assignments.
@@ -438,12 +452,12 @@ as required by the PTAS framework.
 \label{subsec:profile-keys}
 
 For each node, profiling is based on the distribution of machine loads induced by big jobs only.
-Let \(h^{\text{big}} \in \mathbb{R}^m\) denote the vector of machine loads obtained by summing only the
+Let \(o^{\text{big}} \in \mathbb{R}^m\) denote the vector of machine loads obtained by summing only the
 processing times of big jobs assigned to each machine.
 
 Each component is normalized as
 \[
-  \tilde{h}_i = \frac{h^{\text{big}}_i}{T_{\text{norm}}}.
+  \tilde{o}_i = \frac{o^{\text{big}}_i}{T_{\text{norm}}}.
 \]
 The normalized loads are then mapped to the geometric bins, and a histogram over all machines is
 constructed.
@@ -465,10 +479,10 @@ If an identical key is found, the node is marked as having a similar profile.
 \begin{algorithm}[H]
 \caption{Profiling and equivalence detection}
 \label{alg:profiling}
-\KwIn{node with big-job overhead $h^{\text{big}}$ at depth $d$}
+\KwIn{node with big-job overhead $o^{\text{big}}$ at depth $d$}
 
-Normalize loads: $\tilde{h}_i \gets h^{\text{big}}_i / T_{\text{norm}}$\;
-Discretize $\tilde{h}_i$ using geometric bins\;
+Normalize loads: $\tilde{o}_i \gets o^{\text{big}}_i / T_{\text{norm}}$\;
+Discretize $\tilde{o}_i$ using geometric bins\;
 Construct histogram $K$\;
 
 \If{$K$ already seen at depth $d$}{
