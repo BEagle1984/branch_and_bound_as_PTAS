@@ -1,4 +1,5 @@
 \chapter{Implementation}
+\label{ch:implementation}
 
 \section*{Conventions}
 In the implementation, arrays are $0$-indexed (machines $i\in\{0,\dots,m-1\}$, jobs $j\in\{0,\dots,n-1\}$), whereas the mathematical notation in this report is $1$-indexed. To avoid ambiguity, we use:
@@ -14,7 +15,7 @@ In the implementation, arrays are $0$-indexed (machines $i\in\{0,\dots,m-1\}$, j
 \section{Branch-and-Bound}
 \label{sec:bb-framework}
 
-The theoretical foundations and correctness of the Branch-and-Bound algorithm are discussed in Section~3.3. In this section, we focus exclusively on its concrete implementation, data structures, and control flow.
+The theoretical foundations and correctness of the Branch-and-Bound algorithm are discussed in~\ref{ch:algorithms}. In this section, we focus exclusively on its concrete implementation, data structures, and control flow.
 
 The implementation employed in this project is based on a branch-and-bound (B\&B) framework originally developed for the \emph{unrelated machines scheduling} problem.
 The same structure is later reused for the identical machines case, where only the lower-bound routines and selected optimisation components (such as profiling) are adapted, while the core branching, bounding, rounding, and node-selection logic is preserved.

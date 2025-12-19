@@ -1,13 +1,14 @@
-\chapter{Conclusione}
+\chapter{Conclusions}
+\label{ch:conclusion}
 
+This project provided the opportunity to work on a topic that is both conceptually challenging and uncommon in typical coursework. Implementing and experimentally validating advanced algorithmic ideas required sustained effort, careful design choices, and continuous iteration between theory and practice.
 
-\section{Risultati ottenuti}
+Overall, the results obtained were highly satisfactory. The experimental analysis confirms that the profiling-based optimizations have a tangible impact on the behavior of the Branch-and-Bound algorithm, reducing redundant exploration and enabling high-quality approximate solutions to be obtained within practical computational limits. These findings align well with the theoretical expectations and reinforce the practical relevance of the proposed approach.
 
+One of the main lessons learned concerns the gap between theoretical descriptions and concrete implementations. Concepts that are compactly expressed in mathematical form often require non-trivial interpretation when translated into code, and their effectiveness can depend sensitively on implementation details. In this context, empirical evaluation proved essential for understanding which design choices truly matter in practice.
 
+Focusing on the identical machines setting turned out to be a sound and effective choice. It allowed the impact of profiling-based strategies to be studied in isolation, without introducing unnecessary complexity, and led to clearer and more interpretable results.
 
-\section{Possibili miglioramenti futuri}
-Elenco di possibili sviluppi futuri:
-\begin{itemize}
-    \item abc
-    \item def
-\end{itemize}
+With hindsight, additional effort could have been devoted to a deeper characterization of instance hardness. Rather than expanding the set of algorithmic variants, a broader and more systematic exploration of instance distributions and structural properties could help identify which classes of instances are genuinely challenging for the algorithm, and under which conditions the proposed optimizations are most beneficial.
+
+In conclusion, this project was both demanding and rewarding, offering valuable insights into the practical behavior of theoretically motivated algorithms and highlighting the importance of careful experimental design when evaluating approximation-oriented methods.

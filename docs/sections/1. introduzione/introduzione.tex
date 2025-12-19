@@ -1,10 +1,45 @@
-\chapter{Introduzione}
+\chapter{Introduction}
+\label{ch:introduction}
 
-\begin{itemize}
-    \item Problemi NP-Hard
-    \item Branch-and-Bound Algorithms as Polynomial-time Approximation Schemes
-    \item Unrelated parallel machine scheduling problem
-    \item Uniform/Identical parallel machine scheduling problem (identical caso particolare di uniform)
-    \item Profiling come ulteriore ottimizzazione di identical machine scheduling
-    \item Dimostrazione pratica della validità dell'approccio con profiling
-\end{itemize}
+Scheduling problems are a central topic in combinatorial optimization and arise in many
+real-world applications such as manufacturing systems, logistics, and computing
+infrastructures. Among them, parallel machine scheduling with the objective of minimizing the
+makespan is a fundamental NP-hard problem whose computational complexity grows rapidly with
+the size of the instance.
+
+Branch-and-Bound (B\&B) algorithms are a classical technique for solving NP-hard optimization
+problems. Traditionally, they are used as exact methods, providing optimal solutions at the
+cost of potentially exponential running time. As a consequence, their applicability is often
+considered limited to relatively small instances.
+
+Recent research has proposed a different perspective, showing that Branch-and-Bound algorithms
+can be interpreted as approximation schemes when equipped with suitable bounding and stopping
+criteria. In particular, it has been shown that standard B\&B frameworks can exhibit
+\emph{Polynomial-Time Approximation Scheme} (PTAS) behavior, producing solutions arbitrarily
+close to the optimum within polynomial time for fixed approximation parameters~\cite{bb-ptas}.
+
+This project builds upon that theoretical foundation and focuses on the practical behavior of
+Branch-and-Bound algorithms for parallel machine scheduling. While the reference work provides
+theoretical guarantees for the unrelated machines case, it also proposes additional
+optimizations for the uniform machines setting, aimed at improving search efficiency through
+the identification of structurally similar subproblems.
+
+In this work, we focus on the identical machines case, which represents a special case of
+uniform machines. This choice allows us to experimentally validate the proposed optimizations
+in a simplified and controlled setting, isolating their effect from additional sources of
+complexity introduced by machine heterogeneity.
+
+The objective of this project is to implement a Branch-and-Bound algorithm for identical
+machines scheduling, integrate the proposed profiling-based optimizations, and assess their
+impact through systematic computational experiments. The contribution of this work is thus
+empirical, complementing the existing theoretical results with experimental evidence.
+
+The remainder of this report is structured as follows.
+Chapter~\ref{ch:motivation_and_context} presents the motivation and context of the project.
+Chapter~\ref{ch:algorithms} introduces the scheduling problem and the theoretical foundations
+of the algorithms considered.
+Chapters~\ref{ch:requirements} and~\ref{ch:technologies} describe the project requirements and
+the technologies used.
+Chapter~\ref{ch:implementation} details the implementation, while
+Chapter~\ref{ch:analysis} discusses the experimental results.
+Finally, Chapter~\ref{ch:conclusions} reflects on the outcomes of the project.
