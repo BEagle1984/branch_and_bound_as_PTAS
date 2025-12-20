@@ -4,11 +4,11 @@
 \section*{Conventions}
 In the implementation, arrays are $0$-indexed (machines $i\in\{0,\dots,m-1\}$, jobs $j\in\{0,\dots,n-1\}$), whereas the mathematical notation in this report is $1$-indexed. To avoid ambiguity, we use:
 \begin{itemize}
-  \item In the reference Python implementation, the global bounds are stored in variables named \texttt{LLB} and \texttt{LUB}. In this report, we denote the same quantities by $\mathrm{GLB}$ and $\mathrm{GUB}$ to emphasize their global scope:
+  \item In the reference Python implementation, the global bounds are stored in variables named \texttt{LLB} and \texttt{LUB}. Throughout this chapter, we keep the same notation to stay close to the implementation; elsewhere in the report we refer to these quantities as $\mathrm{GLB}$ and $\mathrm{GUB}$ to emphasise their global scope:
   \[
     \texttt{LLB} \equiv \mathrm{GLB}, \qquad \texttt{LUB} \equiv \mathrm{GUB}.
   \]
-  \item Node-level bounds are denoted by $\mathrm{LB}(N)$ and $\mathrm{UB}(N)$, corresponding to the fields \texttt{Node.LB} and \texttt{Node.UB}.
+  \item Node-level bounds are denoted by $\mathrm{LB}$ and $\mathrm{UB}$ (or $\mathrm{LB}(N)$ and $\mathrm{UB}(N)$ when the node needs to be explicit), corresponding to the fields \texttt{Node.LB} and \texttt{Node.UB}.
   \item \texttt{fixed} denotes the set of fixed assignments (corresponding to $F$ in the theoretical chapter).
 \end{itemize}
 
@@ -31,21 +31,19 @@ Each node of the branch-and-bound tree represents a subproblem corresponding to 
   \item the depth of the node in the search tree.
 \end{itemize}
 
-For a given node, the lower bound \(\text{LB}\) denotes a valid lower bound on the optimal makespan of the corresponding subproblem, obtained from a relaxation, while the upper bound \(\text{UB}\) corresponds to the makespan of a feasible integer schedule associated with that node.
+For a given node, the lower bound \(\text{LB}\) and upper bound \(\text{UB}\) correspond to the quantities defined in Chapter~\ref{ch:algorithms}, and are computed here according to the selected bounding and rounding strategies.
 
-The global state maintains a best-known feasible solution, represented by a global upper bound \(\text{LUB}\), and a global lower bound \(\text{LLB}\) derived from the set of active nodes in the search tree.
-More precisely, the global upper bound \(\text{LUB}\) corresponds to the makespan of the best feasible (integral) schedule found so far, while the global lower bound \(\text{LLB}\) is defined as the minimum lower bound among all active nodes in the priority queue.
-In the actual implementation, this value is additionally clamped by the current global upper bound for robustness. Concretely, the update rule is
+The global state maintains the incumbent solution and the associated global bounds \(\text{LUB}\) and \(\text{LLB}\), as defined in Chapter~\ref{ch:algorithms}. In the implementation, \(\text{LLB}\) is derived from the set of active nodes and clamped by \(\text{LUB}\) for numerical robustness.
 \[
 \mathrm{LLB} \gets \min\bigl(\mathrm{LUB}, \min_{N \in Q} \mathrm{LB}(N)\bigr),
 \]
-which ensures that the global lower bound never exceeds the incumbent solution value.
 
 \medskip
 The behaviour of the algorithm is governed by four main components.
+The following components correspond to the theoretical elements introduced in Chapter~\ref{ch:algorithms}, and are described here only in terms of their implementation.
 
 \paragraph{Bounding.}
-For each node, a lower bound on the optimal makespan of the associated subproblem is computed by solving either a linear relaxation or a feasibility-based binary search (see Section~\ref{subsec:lower-bounds}).
+For each node, a lower bound on the optimal makespan of the associated subproblem is computed either via a linear relaxation or via a feasibility-based binary search (see Section~\ref{subsec:lower-bounds}).
 Nodes whose lower bound is not strictly smaller than the current global upper bound \(\text{LUB}\) are pruned.
 
 \paragraph{Branching.}
@@ -61,11 +59,10 @@ Active nodes are stored in a priority queue and extracted according to a configu
 The choice of strategy affects the traversal order of the search tree but not the correctness of the algorithm.
 
 \medskip
-The algorithm terminates when the relative optimality gap satisfies
+The algorithm terminates according to the relative optimality gap condition introduced in Chapter~\ref{ch:algorithms}:
 \[
-  \frac{\text{LUB}}{\text{LLB}} < 1 + \varepsilon,
+  \frac{\text{LUB}}{\text{LLB}} < 1 + \varepsilon.
 \]
-indicating that the incumbent solution is within a factor \((1+\varepsilon)\) of optimality, or when the search space has been fully explored.
 In practice, an additional limit on the maximum number of explored nodes may be enforced to prevent excessive runtimes.
 
 \subsection{Pseudocode}
@@ -76,13 +73,13 @@ In practice, an additional limit on the maximum number of explored nodes may be 
 \KwIn{instance $p_{j,i}$, tolerance $\varepsilon$; strategies for node selection, bounding, branching, rounding}
 \KwOut{best solution $X^\star$ and its objective value $\mathrm{LUB}$}
 
-$(X^{\text{frac}}, \mathrm{LB}) \gets \texttt{LowerBound}(p, h{=}0, \texttt{fixed}{=}\emptyset)$\;
+$(X^{\text{frac}}, \mathrm{LB}) \gets \texttt{LowerBound}(p, o{=}0, \texttt{fixed}{=}\emptyset)$\;
 \If{$X^{\text{frac}}$ is integral}{
   \Return $(X^{\text{frac}}, \mathrm{LB})$\;
 }
 $(X^{\star}, \mathrm{LUB}) \gets \texttt{Rounding}(X^{\text{frac}}, \emptyset)$\;
 
-Initialize queue $Q$ with root node $(\texttt{fixed}{=}\emptyset,\ h{=}0,\ X^{\text{frac}},\ \mathrm{LB})$\;
+Initialize queue $Q$ with root node $(\texttt{fixed}{=}\emptyset,\ o{=}0,\ X^{\text{frac}},\ \mathrm{LB})$\;
 $\mathrm{LLB} \gets \mathrm{LB}$\;
 
 \While{$Q \neq \emptyset$}{
@@ -96,7 +93,7 @@ $\mathrm{LLB} \gets \mathrm{LB}$\;
 
   \For{$q \in \{0,\dots,m-1\}$}{
     $\texttt{fixed}' \gets N.\texttt{fixed} \cup \{(j,q)\}$ \tcp*[l]{create child by fixing $(j,q)$}
-    $o' \gets N.h$ with $o'_q \gets o_q + p_{j,q}$\;
+    $o' \gets N.o$;\quad $o'_q \gets o_q + p_{j,q}$\;
 
     \If{$\texttt{fixed}'$ assigns all jobs}{
       $\mathrm{UB}' \gets \max_i o'_i$\;
@@ -151,7 +148,6 @@ Both operate on the subproblem defined by:
   \item the overhead vector $\mathbf{o} \in \mathbb{R}^m$,
   \item the remaining unfixed jobs.
 \end{itemize}
-In both cases, the output consists of a fractional assignment \(X^{\text{frac}}\) and a scalar lower bound \(\text{LB}\).
 
 \paragraph{Linear relaxation (\texttt{lin\_relax}).}
 In the linear-relaxation strategy, a linear program is solved in which each unfixed job may be fractionally assigned to machines.
@@ -340,7 +336,7 @@ the rounding strategies used in the framework.
 \begin{algorithm}[H]
 \caption{Greedy fractional bound for identical machines}
 \label{alg:greedy-bound}
-\KwIn{processing times $p_j$, overhead $h$, number of machines $m$}
+\KwIn{processing times $p_j$, overhead $o$, number of machines $m$}
 \KwOut{fractional assignment and its makespan}
 
 $C_{\max} \gets \frac{1}{m}\sum_j p_j$\;
