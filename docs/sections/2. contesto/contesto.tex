@@ -11,11 +11,11 @@ While the original paper provides strong theoretical results supported by comput
 
 The motivation of this semester project is therefore twofold. First, we aim to provide a \emph{practical and empirical validation} of the theoretical claims presented in the reference paper. Second, we focus specifically on the uniform and identical parallel machine scheduling problems, implementing the additional optimizations proposed by the authors and systematically evaluating their impact on the behavior of the Branch-and-Bound algorithm.
 
-Rather than introducing new theoretical results, this project emphasizes faithful implementation, careful adaptation of existing techniques, and rigorous experimental analysis. The objective is to bridge the gap between theoretical guarantees and observed performance, and to assess whether the proposed enhancements effectively improve scalability and approximation quality in practice.
+This project does not aim to introduce new theoretical results. Instead, it emphasizes faithful implementation, careful adaptation of existing techniques, and rigorous experimental analysis. The objective is to bridge the gap between theoretical guarantees and observed performance, and to assess whether the proposed enhancements effectively improve scalability and approximation quality in practice.
 
 \section{Context}
 
-This work was carried out as a semester project within the Bachelor of Science in Computer Science program at SUPSI. The project was conducted under academic supervision and follows the explicit objective of experimentally validating and extending an existing research contribution, rather than proposing a novel algorithmic framework.
+This work was carried out as a semester project within the Bachelor of Science in Computer Science program at SUPSI.
 
 The reference work for this project is \emph{``Branch-and-Bound Algorithms as Polynomial-Time Approximation Schemes''} by Encz, Mastrolilli, and Vercesi~\cite{bb-ptas}. That paper establishes that, for several classes of scheduling and knapsack problems, carefully designed Branch-and-Bound algorithms can be interpreted as approximation schemes with provable guarantees. In particular, it introduces profiling-based techniques that allow the algorithm to identify and avoid exploring structurally similar subproblems, thereby reducing redundant exploration of the search space.
 
