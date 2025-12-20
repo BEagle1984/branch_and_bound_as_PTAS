@@ -47,18 +47,22 @@ For the sake of this project, we only focus on the first case of \emph{identical
 To summarize, the interplay between job processing times and machine capabilities significantly influences the complexity of the scheduling problem. By focusing on identical machines, we aim to simplify the analysis while still addressing a meaningful subset of the problem.
 
 
-\subsubsection{Size of the problem}
-Let's begin by discussing the \emph{size of the problem}, which is arguably the easier influential factor to visualize. We approach this by distinguishing first by the growth in size, then by the ratio between jobs and machines.
+\subsubsection{Instance size and difficulty}
+Let's begin by discussing the \emph{size of the problem}, which is arguably the easier influential factor to visualize. We approach this by distinguishing first the growth in size, and then the ratio between jobs and machines.
 
-In the first case, it is intuitive that as the number of jobs and machines increases, the complexity of finding an optimal solution also increases. This is due to the exponential growth of possible assignments, space complexity $\mathcal{O}(m^n\cdot n!)$.
+In the first case, it is intuitive that as the number of jobs and machines increases, the complexity of finding an optimal solution also increases. This is due to the exponential growth of possible assignments, with a search space that grows combinatorially with $n$ and $m$.
 
-In the second case, we stumble upon an open question. The general consensus, based on heuristics, builds around three main scenarios:
+In the second case, we rely on heuristic intuition rather than formal theoretical results. Empirical observations and practical experience suggest three typical scenarios:
 \begin{itemize}
-  \item \textbf{EASY - Machines abundance} ($n/m\rightarrow 0$): A lot of machines are available to accommodate the jobs, leading to less contention and simpler assignment strategies.
-  \item \textbf{HARD - Bottleneck} ($n/m \approx 1\dots 1.5$): Significant contention for machines, leading to many local optimum and making it difficult to find a the global optimum; requires more sophisticated strategies (e.g. Simulated Annealing)  to optimize the assignment.
-  \item \textbf{EASY - Jobs abundance} ($n/m \rightarrow \infty$): Many jobs compete for a limited number of machines, this leads to a saturation of the machines, as machines will be heavily loaded regardless of the specific assignment (critical sequence of operations matters less), i.e. there are many near-optimal solutions.
+  \item \textbf{EASY -- Machines abundance} ($n/m \rightarrow 0$): A large number of machines is available to accommodate the jobs, leading to limited contention and simpler assignment strategies.
+
+  \item \textbf{HARD -- Bottleneck} ($n/m \approx 1\dots 1.5$): Significant contention among machines leads to many competing assignments with similar quality, making it difficult to identify good schedules early in the search.
+
+  \item \textbf{EASY -- Jobs abundance} ($n/m \rightarrow \infty$): Many jobs compete for a limited number of machines, leading to machine saturation. In this regime, most machines are heavily loaded regardless of the specific assignment, and many schedules are near-optimal.
 \end{itemize}
 
-For the hardest case, the literature [\todo{ref. needed!}] suggests a ratio of $n/m \approx 1\dots 1.5$ as a particularly challenging case, although this is not a strict rule and can vary based on the problem type [see \todo{section Problem type}], i.e. factors such as job processing times and machine capabilities.\\
-If we consider the case of identical machines, the main focus of this project, the above-mentioned heuristic for the ratio $n/m$ is a good starting point but needs to be adjusted. In fact, if we consider a ratio $n/m=1$, we end up with a trivial case where each machine gets exactly one job, making the problem easy to solve\footnote{In this case, the problem reduces to a simple one-to-one assignment with no scheduling complexity, resulting in a makespan equal to the longest job processing time.}. Therefore, for identical machines, we suggest\footnote{The ratio came from discussion with our relators, and thereafter from preliminary experiments conducted during this project.} that the hardest case occurs around a ratio of $n/m \approx 2$.
-
+For the hardest regime, the ratio $n/m \approx 1\dots 1.5$ is commonly regarded as particularly challenging from a heuristic and empirical perspective, although this is not a strict rule and depends on additional factors such as job processing times and machine capabilities.
+\\
+If we consider the case of identical machines, which is the main focus of this project, the above heuristic needs to be adjusted. In fact, when $n/m = 1$, each machine receives exactly one job, yielding a trivial instance that is easy to solve%
+\footnote{In this case, the problem reduces to a one-to-one assignment with no scheduling complexity, and the makespan equals the longest job processing time.}.
+Based on preliminary experiments and discussions during the project, we therefore suggest that, for identical machines, the hardest instances occur around a ratio of $n/m \approx 2$.
