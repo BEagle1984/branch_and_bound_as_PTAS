@@ -1,13 +1,20 @@
 \section{Branch-and-Bound}
-Branch-and-Bound (B\&B) is the foundation of this project and is one of the numerous techniques available for solving combinatorial optimization problems, such as the scheduling problem. Other techniques include greedy algorithms, dynamic programming, and heuristic methods, which we will not mention in this context.
+Branch-and-Bound (B\&B) is the foundation of this project and is one of the numerous techniques available for solving combinatorial optimization problems, such as the scheduling problem.
+Other techniques include greedy algorithms, dynamic programming, and heuristic methods, which we will not mention in this context.
 
-The Branch-and-Bound method is used to solve NP-hard problems. The algorithm systematically explores the solution space by dividing the problem into smaller subproblems (\emph{branching}) and calculating lower and upper bounds to evaluate the quality of the solutions found (\emph{bounding}). Once a subproblem's bound indicates that it cannot yield a better solution than the best one found so far, a new subproblem is selected for exploration. If a subproblem's bound is worse than the current best solution, it is ignored and the process continues (\emph{selection/search}). This process continues until all subproblems have been explored or pruned, ultimately leading to the optimal solution.
+The Branch-and-Bound method is used to solve NP-hard problems.
+The algorithm systematically explores the solution space by dividing the problem into smaller subproblems (\emph{branching}) and calculating lower and upper bounds to evaluate the quality of the solutions found (\emph{bounding}). Once a subproblem's bound indicates that it cannot yield a better solution than the best one found so far, a new subproblem is selected for exploration.
+If a subproblem's bound is worse than the current best solution, it is ignored and the process continues (\emph{selection/search}). This process continues until all subproblems have been explored or pruned, ultimately leading to the optimal solution.
 
 From the brief description above, we can identify three main components of Branch-and-Bound:
 \begin{itemize}
-  \item \textbf{Branching}: The division of the problem into smaller subproblems. In our context, this means to assign a specific job to a specific machine. We will refer to this as \emph{fixing} a job to a machine.
-  \item \textbf{Bounding}: The calculation of lower and upper bounds for each subproblem. These bounds help determine whether a subproblem can be discarded (pruning) or if it should be further explored.
-  \item \textbf{Selection/Search}: The strategy used to select which subproblem to explore next. This can be done using different strategies, such as depth-first or breadth-first.
+  \item \textbf{Branching}: The division of the problem into smaller subproblems.
+  In our context, this means to assign a specific job to a specific machine.
+  We will refer to this as \emph{fixing} a job to a machine.
+  \item \textbf{Bounding}: The calculation of lower and upper bounds for each subproblem.
+  These bounds help determine whether a subproblem can be discarded (pruning) or if it should be further explored.
+  \item \textbf{Selection/Search}: The strategy used to select which subproblem to explore next.
+  This can be done using different strategies, such as depth-first or breadth-first.
 \end{itemize}
 
 To better understand the algorithm's flow and its application to the scheduling problem, we delve into its specific characteristics in the next section.
@@ -80,7 +87,9 @@ Set global bounds: $\text{GLB} \leftarrow LB(\emptyset)$, $\text{GUB} \leftarrow
 \subsection{Key Mathematical Components}
 
 \subsubsection{Lower Bound Computation}
-For a node with fixed assignments $F$, the lower bound $LB(F)$ is computed by solving a relaxed version of the scheduling problem where jobs can be fractionally split across machines. Let $o_i = \sum_{(j,i) \in F} p_j$ denote the overhead (total processing time already fixed) on machine $i$. The relaxed problem seeks to minimize:
+For a node with fixed assignments $F$, the lower bound $LB(F)$ is computed by solving a relaxed version of the scheduling problem where jobs can be fractionally split across machines.
+Let $o_i = \sum_{(j,i) \in F} p_j$ denote the overhead (total processing time already fixed) on machine $i$.
+The relaxed problem seeks to minimize:
 \begin{equation}
 \min_{x_{j,i} \geq 0} \max_{i=1,\ldots,m} \left\{ o_i + \sum_{j \notin \{j' : (j',i') \in F\}} p_j \cdot x_{j,i} \right\}
 \end{equation}
@@ -92,7 +101,8 @@ subject to:
 This can be efficiently solved using greedy allocation or binary search techniques.
 
 \subsubsection{Upper Bound via Rounding}
-Given a fractional solution $\{x_{j,i}\}$ from the relaxed problem, an upper bound is obtained by converting it to a complete assignment. Since at most $m$ jobs can be fractionally assigned, these are rounded to integral assignments using a matching-based approach that minimizes the resulting makespan.
+Given a fractional solution $\{x_{j,i}\}$ from the relaxed problem, an upper bound is obtained by converting it to a complete assignment.
+Since at most $m$ jobs can be fractionally assigned, these are rounded to integral assignments using a matching-based approach that minimizes the resulting makespan.
 
 \subsubsection{Pruning Criterion}
 A node $(F, LB(F))$ is pruned if:
