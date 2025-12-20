@@ -1,11 +1,13 @@
 \chapter{Analysis of Results}
 \label{ch:analysis}
 
-In this chapter we analyse the experimental results obtained by comparing the base Branch-and-Bound algorithm (\texttt{NO\_PROFILING}) with its profiling-enhanced variant (\texttt{PRUNE}) for the identical machines scheduling problem. The objective is to experimentally validate the effectiveness of profiling as a mechanism to reduce the explored search space and to extend the practical applicability of the algorithm to larger and more demanding instances.
+In this chapter we analyse the experimental results obtained by comparing the base Branch-and-Bound algorithm (\texttt{NO\_PROFILING}) with its profiling-enhanced variant (\texttt{PRUNE}) for the identical machines scheduling problem.
+The objective is to experimentally validate the effectiveness of profiling as a mechanism to reduce the explored search space and to extend the practical applicability of the algorithm to larger and more demanding instances.
 
 \section{Experimental setup recap}
 
-After an extensive exploratory phase, a consolidated experimental configuration was selected in order to highlight the behavioural differences between the two variants under comparable approximation guarantees. The experiments were conducted as follows:
+After an extensive exploratory phase, a consolidated experimental configuration was selected in order to highlight the behavioural differences between the two variants under comparable approximation guarantees.
+The experiments were conducted as follows:
 
 \begin{itemize}
   \item For each problem size, \textbf{200 independent instances} were generated using different random seeds.
@@ -59,7 +61,8 @@ Figure~Y (second attached plot) reports analogous experiments performed with tig
 \varepsilon = 0.05 / 0.1 \qquad \text{and} \qquad \varepsilon = 0.01 / 0.02.
 \]
 
-As expected, reducing \(\varepsilon\) substantially increases the computational burden for both variants. However, the relative advantage of profiling becomes even more pronounced:
+As expected, reducing \(\varepsilon\) substantially increases the computational burden for both variants.
+However, the relative advantage of profiling becomes even more pronounced:
 
 \begin{itemize}
   \item Without profiling, the algorithm struggles already at \(m = 25\), with a sharp increase in failed instances.
@@ -77,16 +80,21 @@ Several important observations can be drawn from these results:
   \item \textbf{Profiling dramatically reduces the effective search space.}
   The reduction in explored nodes is systematic and grows with instance size, confirming that profile-based equivalence detection successfully eliminates large sets of redundant subproblems.
   \item \textbf{The benefit increases with problem difficulty.}
-  For easy instances, both variants perform similarly. The advantage of profiling becomes substantial exactly when the base algorithm begins to struggle.
+  For easy instances, both variants perform similarly.
+  The advantage of profiling becomes substantial exactly when the base algorithm begins to struggle.
   \item \textbf{Runtime trade-off is secondary.}
-  While profiling introduces a per-node overhead due to profile computation and comparison, this cost is largely dominated by the savings obtained through reduced exploration. When the number of explored nodes is similar, profiling is slightly slower; however, in all practically relevant hard cases, the base algorithm fails outright, while the profiling version remains tractable.
+  While profiling introduces a per-node overhead due to profile computation and comparison, this cost is largely dominated by the savings obtained through reduced exploration.
+  When the number of explored nodes is similar, profiling is slightly slower; however, in all practically relevant hard cases, the base algorithm fails outright, while the profiling version remains tractable.
   \item \textbf{Profiling effectively extends the usable range of the algorithm.}
-  Under the imposed node limit, profiling shifts the boundary of solvable instances by roughly one to two problem sizes, depending on \(\varepsilon\). This extension is crucial in practice and aligns with the theoretical role of profiling within the PTAS framework.
+  Under the imposed node limit, profiling shifts the boundary of solvable instances by roughly one to two problem sizes, depending on \(\varepsilon\).
+  This extension is crucial in practice and aligns with the theoretical role of profiling within the PTAS framework.
 \end{itemize}
 
 \section{Summary}
 
-The experimental results provide strong empirical evidence that profiling is a highly effective enhancement for Branch-and-Bound applied to identical machines scheduling. By aggressively pruning structurally similar subproblems, profiling significantly reduces the explored search space and allows the algorithm to scale to larger instances and tighter approximation guarantees. These findings experimentally validate the theoretical motivations behind profiling and confirm its practical relevance within a PTAS-oriented Branch-and-Bound framework.
+The experimental results provide strong empirical evidence that profiling is a highly effective enhancement for Branch-and-Bound applied to identical machines scheduling.
+By aggressively pruning structurally similar subproblems, profiling significantly reduces the explored search space and allows the algorithm to scale to larger instances and tighter approximation guarantees.
+These findings experimentally validate the theoretical motivations behind profiling and confirm its practical relevance within a PTAS-oriented Branch-and-Bound framework.
 
 \bigskip
 \noindent

@@ -3,12 +3,19 @@
 
 \section{Algorithm implementation}
 
-The implementation of the algorithms was developed in \emph{Python}, starting from the code provided by the authors of the paper~\cite{bb-ptas}, which was originally designed for the \emph{unrelated machines} case. In that version, the lower bound of the Branch-and-Bound nodes was computed using the \emph{SCIP} solver~\cite{scip}, accessed through the \emph{PySCIPOpt} library. This choice, which is appropriate for the general problem, allows the authors to obtain fractional bounds by means of \emph{binary search} and \emph{linear relaxation}.
+The implementation of the algorithms was developed in \emph{Python}, starting from the code provided by the authors of the paper~\cite{bb-ptas}, which was originally designed for the \emph{unrelated machines} case.
+In that version, the lower bound of the Branch-and-Bound nodes was computed using the \emph{SCIP} solver~\cite{scip}, accessed through the \emph{PySCIPOpt} library.
+This choice, which is appropriate for the general problem, allows the authors to obtain fractional bounds by means of \emph{binary search} and \emph{linear relaxation}.
 
-In our project, however, this approach proved to be overly expensive and not strictly necessary. In the case of \emph{identical machines}, the structure of the problem is significantly simpler and allows the use of much lighter methods for lower bound computation. Moreover, the use of \emph{SCIP}~\cite{scip} introduced an additional practical limitation: it was not possible to force the solver to systematically use the \emph{primal simplex} method, which is required to guarantee that the number of fractional variables in the LP solution remains less than or equal to the number of machines. The absence of this guarantee compromised the reliability of the rounding phase and introduced a non-negligible computational overhead.
+In our project, however, this approach proved to be overly expensive and not strictly necessary.
+In the case of \emph{identical machines}, the structure of the problem is significantly simpler and allows the use of much lighter methods for lower bound computation.
+Moreover, the use of \emph{SCIP}~\cite{scip} introduced an additional practical limitation: it was not possible to force the solver to systematically use the \emph{primal simplex} method, which is required to guarantee that the number of fractional variables in the LP solution remains less than or equal to the number of machines.
+The absence of this guarantee compromised the reliability of the rounding phase and introduced a non-negligible computational overhead.
 
-For these reasons, we completely replaced the use of \emph{SCIP}~\cite{scip} with a \emph{greedy}-based lower bound computation method, which is fully sufficient for the identical machines case and significantly more efficient from a computational perspective. This choice allowed us to drastically reduce the processing time of the Branch-and-Bound nodes while maintaining a bound quality adequate for the purposes of the project.
+For these reasons, we completely replaced the use of \emph{SCIP}~\cite{scip} with a \emph{greedy}-based lower bound computation method, which is fully sufficient for the identical machines case and significantly more efficient from a computational perspective.
+This choice allowed us to drastically reduce the processing time of the Branch-and-Bound nodes while maintaining a bound quality adequate for the purposes of the project.
 
 \section{Data analysis}
 
-The analysis of the experimental data was carried out in Python using standard data science libraries. \emph{numpy} was used for basic numerical processing, \emph{pandas} for organizing and aggregating the results collected during the experiments, and \emph{matplotlib} for generating the visualizations used to compare the base version of the algorithm with the profiling-enhanced variant. The data were exported in CSV format and analyzed through dedicated notebooks, making it possible to summarize performance trends and quantitatively support the discussion of the results.
+The analysis of the experimental data was carried out in Python using standard data science libraries. \emph{numpy} was used for basic numerical processing, \emph{pandas} for organizing and aggregating the results collected during the experiments, and \emph{matplotlib} for generating the visualizations used to compare the base version of the algorithm with the profiling-enhanced variant.
+The data were exported in CSV format and analyzed through dedicated notebooks, making it possible to summarize performance trends and quantitatively support the discussion of the results.
