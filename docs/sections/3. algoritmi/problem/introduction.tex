@@ -16,15 +16,16 @@ A scheduling problem, and therefore its instances, can be easy to solve or hard 
 \begin{itemize}
   \item \textbf{Job processing times} - variation in processing times across jobs,
   \item \textbf{Machine capabilities} - difference between machines involved,
-  \item \textbf{Size of the problem} - number of jobs and machines involved.
+  \item \textbf{Instance size} - number of jobs and machines involved.
 \end{itemize}
 Next, we consider a few scenarios to illustrate how the above-mentioned characteristics affect a problem's difficulty.
 
 
 \subsubsection{Job processing times}
+\label{sec:job_processing_times}
 Before we discuss the impact of job processing times on problem difficulty, we restrict the scope of this project to deterministic processing times, meaning that the processing time for each job on each machine is fixed and known in advance.
 
-We distinguish between small and big jobs based on their processing times. We defer the exact definition of small and big jobs to a later section [\todo{ref. required - definition using $\epsilon$...}], as it requires a concept we have yet to introduce.
+We distinguish between small and big jobs based on their processing times. We defer the exact definition of small and big jobs to a later section (see Section~\ref{subsubsec:big-jobs}), as it relies on the approximation parameter $\epsilon$ in the context of profiling.
 
 The ratio between small and big jobs leads to different scenarios:
 \begin{itemize}
@@ -47,7 +48,7 @@ For the sake of this project, we only focus on the first case of \emph{identical
 To summarize, the interplay between job processing times and machine capabilities significantly influences the complexity of the scheduling problem. By focusing on identical machines, we aim to simplify the analysis while still addressing a meaningful subset of the problem.
 
 
-\subsubsection{Instance size and difficulty}
+\subsubsection{Instance size}
 Let's begin by discussing the \emph{size of the problem}, which is arguably the easier influential factor to visualize. We approach this by distinguishing first the growth in size, and then the ratio between jobs and machines.
 
 In the first case, it is intuitive that as the number of jobs and machines increases, the complexity of finding an optimal solution also increases. This is due to the exponential growth of possible assignments, with a search space that grows combinatorially with $n$ and $m$.
