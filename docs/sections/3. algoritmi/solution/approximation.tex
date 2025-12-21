@@ -5,9 +5,9 @@ Approximation provides a compromise between accuracy and computational efficienc
 We say that an algorithm is a $\rho$-approximation if it guarantees that the solution it produces is within a factor of $\rho$ of the optimal solution.
 Formally, for a minimization problem such as the one considered in our project, if $C_{\mathcal{A}}$ is the cost of the solution produced by the algorithm $\mathcal{A}$ and $C_{OPT}$ is the cost of the optimal solution, then the algorithm is a $\rho$-approximation if $C_{\mathcal{A}} \leq \rho \cdot C_{OPT}$ where $\rho \geq 1$.
 
-For the sake of simplicity and consistency with the branch-and-bound PTAS framework introduced by Encz, Mastrolilli, and Vercesi~\cite{bb-ptas}, we introduce the variable $\epsilon > 0$ such that $\rho = 1 + \epsilon$.
+For the sake of simplicity and consistency with the branch-and-bound PTAS framework introduced by Encz, Mastrolilli, and Vercesi~\cite{bb-ptas}, we introduce the variable $\varepsilon > 0$ such that $\rho = 1 + \varepsilon$.
 This allows us to express the approximation ratio in terms of how much worse the algorithm's solution can be compared to the optimal solution.
-Therefore, an algorithm is a $(1 + \epsilon)$-approximation if it guarantees that $C_{\mathcal{A}} \leq (1 + \epsilon) \cdot C_{OPT}$, namely that the solution produced is at most $\epsilon$ times worse than the optimal solution.
+Therefore, an algorithm is a $(1 + \varepsilon)$-approximation if it guarantees that $C_{\mathcal{A}} \leq (1 + \varepsilon) \cdot C_{OPT}$, namely that the solution produced is at most $\varepsilon$ times worse than the optimal solution.
 
 To transition to specific approximation schemes, we categorize algorithms based on their computational complexity, providing a means of comparison between different approaches.
 
@@ -16,14 +16,14 @@ Approximation schemes categorize algorithms based on their computational complex
 The two classes of approximation schemes encountered in our project are \emph{PTAS} and \emph{FPTAS}.
 A brief description of each is provided below:
 \begin{itemize}
-  \item \textbf{PTAS (Polynomial Time Approximation Scheme)}: An algorithm that, for every positive $\epsilon$ value, produces a solution that is within a factor of $(1 + \epsilon)$ of the optimum in polynomial time relative to the input size.
-  However, the execution time may depend exponentially (or worse) on $1/\epsilon$.
-  \item \textbf{FPTAS (Fully Polynomial Time Approximation Scheme)}: An algorithm that, for every positive $\epsilon$ value, produces a solution within a factor of $(1 + \epsilon)$ of the optimum in polynomial time with respect to both the input size and $1/\epsilon$.
+  \item \textbf{PTAS (Polynomial Time Approximation Scheme)}: An algorithm that, for every positive $\varepsilon$ value, produces a solution that is within a factor of $(1 + \varepsilon)$ of the optimum in polynomial time relative to the input size.
+  However, the execution time may depend exponentially (or worse) on $1/\varepsilon$.
+  \item \textbf{FPTAS (Fully Polynomial Time Approximation Scheme)}: An algorithm that, for every positive $\varepsilon$ value, produces a solution within a factor of $(1 + \varepsilon)$ of the optimum in polynomial time with respect to both the input size and $1/\varepsilon$.
 \end{itemize}
 
 Hierarchically, FPTAS is a strict subset of PTAS (assuming $P\neq NP$), meaning that FPTAS offers a stronger guarantee on the algorithm's efficiency.
 
-The difference between the two can be better perceived by looking at the case when a very accurate approximation is desired (i.e. $\epsilon$ very small, $\epsilon\rightarrow 0$): in this case, 
+The difference between the two can be better perceived by looking at the case when a very accurate approximation is desired (i.e. $\varepsilon$ very small, $\varepsilon\rightarrow 0$): in this case,
 \begin{itemize}
   \item PTAS will take significantly longer to run, e.g. exponentially longer,
   \item FPTAS will take longer to run, but only polynomially longer.
