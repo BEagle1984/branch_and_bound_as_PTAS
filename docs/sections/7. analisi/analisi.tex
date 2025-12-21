@@ -32,7 +32,14 @@ This setup is consistent with the overall methodology described in the previous 
 
 \section{Results for \(\varepsilon = 0.1\) (\texttt{NO\_PROFILING}: \(\varepsilon = 0.2\))}
 
-Figure~X (first attached plot) reports the number of explored nodes for each instance, sorted in increasing order, for both algorithm variants and increasing instance sizes.
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{sections/7. analisi/histogram_mirrored_nodes_explored_e0-1}
+  \caption{Number of explored nodes for $\varepsilon = 0.1$ (NO\_PROFILING: $\varepsilon = 0.2$), sorted in increasing order, for increasing instance sizes.}
+  \label{fig:nodes_e01}
+\end{figure}
+
+Figure~\ref{fig:nodes_e01} reports the number of explored nodes for each instance, sorted in increasing order, for both algorithm variants and increasing instance sizes.
 
 A clear qualitative difference emerges already for moderate problem sizes:
 
@@ -56,7 +63,21 @@ These results clearly show that profiling delays the onset of combinatorial expl
 
 \section{Stricter tolerances: \(\varepsilon = 0.05\) and \(\varepsilon = 0.01\)}
 
-Figure~Y (second attached plot) reports analogous experiments performed with tighter approximation requirements:
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{sections/7. analisi/histogram_mirrored_nodes_explored_e0-05}
+  \caption{Number of explored nodes for $\varepsilon = 0.05$ (NO\_PROFILING: $\varepsilon = 0.1$), sorted in increasing order, for increasing instance sizes.}
+  \label{fig:nodes_e005}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{sections/7. analisi/histogram_mirrored_nodes_explored_e0-01}
+  \caption{Number of explored nodes for $\varepsilon = 0.01$ (NO\_PROFILING: $\varepsilon = 0.02$), sorted in increasing order, for increasing instance sizes.}
+  \label{fig:nodes_e001}
+\end{figure}
+
+Figures~\ref{fig:nodes_e005} and~\ref{fig:nodes_e001} report analogous experiments performed with tighter approximation requirements:
 \[
 \varepsilon = 0.05 / 0.1 \qquad \text{and} \qquad \varepsilon = 0.01 / 0.02.
 \]
