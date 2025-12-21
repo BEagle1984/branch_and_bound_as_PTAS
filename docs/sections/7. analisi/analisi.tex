@@ -1,12 +1,12 @@
 \chapter{Analysis of results}
 \label{ch:analysis}
 
-In this chapter we analyse the experimental results obtained by comparing the base branch-and-bound algorithm (\texttt{NO\_PROFILING}) with its profiling-enhanced variant (\texttt{PRUNE}) for the identical machines scheduling problem.
+In this chapter we analyze the experimental results obtained by comparing the base branch-and-bound algorithm (\texttt{NO\_PROFILING}) with its profiling-enhanced variant (\texttt{PRUNE}) for the identical machines scheduling problem.
 The objective is to experimentally validate the effectiveness of profiling as a mechanism to reduce the explored search space and to extend the practical applicability of the algorithm to larger and more demanding instances.
 
 \section{Experimental setup recap}
 
-After an extensive exploratory phase, a consolidated experimental configuration was selected in order to highlight the behavioural differences between the two variants under comparable approximation guarantees.
+After an extensive exploratory phase, a consolidated experimental configuration was selected in order to highlight the behavioral differences between the two variants under comparable approximation guarantees.
 The experiments were conducted as follows:
 
 \begin{itemize}
@@ -70,7 +70,7 @@ However, the relative advantage of profiling becomes even more pronounced:
   \item In contrast, the profiling-enhanced version remains viable for small and medium-sized instances, even under these stricter precision requirements, and consistently explores one order of magnitude fewer nodes than the base version in comparable settings.
 \end{itemize}
 
-This behaviour confirms that profiling is particularly effective in regimes where high precision exacerbates the branching complexity, precisely the scenarios where a PTAS-style pruning strategy is theoretically motivated.
+This behavior confirms that profiling is particularly effective in regimes where high precision exacerbates the branching complexity, precisely the scenarios where a PTAS-style pruning strategy is theoretically motivated.
 
 \section{Discussion and insights}
 
