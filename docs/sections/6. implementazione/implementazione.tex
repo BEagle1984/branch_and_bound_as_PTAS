@@ -23,7 +23,7 @@ In this section, we focus exclusively on its concrete implementation, data struc
 The implementation employed in this project is based on a branch-and-bound (B\&B) framework originally developed for the \emph{unrelated machines scheduling} problem.
 The same structure is later reused for the identical machines case, where only the lower-bound routines and selected optimisation components (such as profiling) are adapted, while the core branching, bounding, rounding, and node-selection logic is preserved.
 
-\subsection{Implementation Overview}
+\subsection{Implementation overview}
 
 Each node of the branch-and-bound tree represents a subproblem corresponding to a partial assignment of jobs to machines and is characterised by:
 \begin{itemize}
@@ -142,7 +142,7 @@ For each child node, a new lower bound \(\text{LB}'\) is computed and the node i
 
 The global lower bound \(\text{LLB}\) is derived from the minimum lower bound among the nodes currently stored in the queue, clipped by \(\text{LUB}\).
 
-\subsection{Lower-Bound Strategies}
+\subsection{Lower bound strategies}
 \label{subsec:lower-bounds}
 
 The inherited implementation provides two alternative strategies to compute node-level lower bounds within the branch-and-bound framework.
@@ -182,7 +182,7 @@ If the LP is feasible, the value \(C\) becomes the new right endpoint; otherwise
 The process continues until \((\ell, r]\) cannot be further refined, and the final feasible value \(r\) is taken as the node lower bound.
 The corresponding LP solution defines the fractional assignment \(X^{\text{frac}}\).
 
-\subsection{Rounding Strategies}
+\subsection{Rounding strategies}
 \label{subsec:rounding-strategies}
 
 When the relaxation at a node yields a fractional solution \(X^{\text{frac}}\), a deterministic rounding procedure is applied to construct a feasible integer assignment.
@@ -213,7 +213,7 @@ Since \(|F| \le m\), the fractional jobs can be assigned by enumerating all inje
 Equivalently, all permutations of machines of length \(|F|\) are considered.
 For each candidate placement, the completion times are updated and the makespan is evaluated; the assignment yielding the minimum makespan among the enumerated placements is selected, and the corresponding makespan is returned as \(\text{UB}\).
 
-\subsection{Branching Rules}
+\subsection{Branching rules}
 \label{subsec:branching-rules}
 
 When the relaxation at a node produces a non-integer solution, a set of \emph{fractional jobs} is obtained, namely those jobs \(j\) for which at least one variable \(x_{j,i}\) is non-integer.
@@ -240,7 +240,7 @@ is computed.
 The branching job is the one with maximum average processing time, i.e., the job that is globally heaviest across all machines.
 This tends to branch first on jobs that dominate the total processing workload.
 
-\subsection{Node Selection Strategies}
+\subsection{Node selection strategies}
 \label{subsec:node-selection}
 
 The branch-and-bound framework explores the search space by maintaining a set of active nodes in a priority queue.
@@ -263,7 +263,7 @@ This strategy explores complete assignments early, which may quickly produce goo
 Nodes are selected in order of increasing depth.
 This strategy explores the search tree level by level and provides a more uniform coverage of the solution space, at the cost of potentially delaying the discovery of good feasible solutions.
 
-\section{Adaptation to Identical Machines Scheduling}
+\section{Adaptation to identical machines scheduling}
 \label{sec:bb-identical}
 
 This section describes the adaptation of the inherited branch-and-bound (B\&B) framework to the \emph{identical machines scheduling} problem, which constitutes the main scope of this project.
@@ -272,7 +272,7 @@ bounding procedures, rounding strategies, stopping criterion, and the integratio
 
 The contribution of this project lies in the faithful and robust translation of these ideas into an efficient implementation, addressing practical issues that arise.
 
-\subsection{Key Differences with Respect to the Unrelated Case}
+\subsection{Key differences with respect to the unrelated case}
 
 In the identical-machines setting, processing times depend only on the job index, i.e.\
 \(p_{j,i} = p_j\) for all machines \(i\).
@@ -280,7 +280,7 @@ This structural simplification leads to the following consequences:
 
 \begin{itemize}
   \item The fractional optimum for the root relaxation admits a closed form, given by the average load.
-  \item Lower-bound computations can be simplified and made solver-independent.
+  \item Lower bound computations can be simplified and made solver-independent.
   \item Rounding strategies can exploit the symmetry between machines and rely on current machine loads.
   \item Profiling-based prioritisation and pruning can be integrated to reduce the effective search space.
   \item The stopping criterion must be relaxed to account for the additional approximation introduced by profiling.
@@ -288,7 +288,7 @@ This structural simplification leads to the following consequences:
 
 The following subsections describe these adaptations in detail.
 
-\subsection{Bounding for Identical Machines}
+\subsection{Bounding for identical machines}
 \label{subsec:identical-bounds}
 
 \subsubsection{LP-based approach and rounding incompatibility}
@@ -345,7 +345,7 @@ $C_i \gets o_i \quad \forall i \in \{0,\dots,m-1\}$\;
 \Return fractional assignment and makespan $\max_i C_i$\;
 \end{algorithm}
 
-\subsection{Rounding Strategies for Identical Machines}
+\subsection{Rounding strategies for identical machines}
 \label{subsec:identical-rounding}
 
 Given a fractional solution \(X^{\text{frac}}\), a deterministic rounding procedure is applied to obtain a feasible integer schedule.
@@ -363,7 +363,7 @@ It is the default rounding method we used throughout the experiments and in our 
 Each fractional job is assigned to the first machine it appears on in the fractional solution.
 This rule provides a simple, deterministic baseline and is primarily used for testing and comparison.
 
-\subsection{Stopping Criterion and Approximation Guarantee}
+\subsection{Stopping criterion and approximation guarantee}
 \label{subsec:identical-stopping}
 
 In the absence of profiling, the stopping criterion coincides with the standard relative gap condition:
@@ -382,7 +382,7 @@ Accordingly, the algorithm is allowed to terminate when
 For the same input value of \(\varepsilon\), this condition admits a larger relative optimality gap than in the non-profiling case.
 The relaxed stopping criterion compensates for the approximation introduced by profile-based pruning and ensures that the final solution satisfies the approximation bound established in the paper.
 
-\subsection{Profiling-Based Prioritisation and Pruning}
+\subsection{Profiling-based prioritisation and pruning}
 \label{subsec:profiling}
 
 Profiling is introduced to reduce the effective search space by identifying nodes that induce similar load distributions.
@@ -469,7 +469,7 @@ Construct histogram $K$\;
 
 Depending on the selected profiling mode, this information is used either to deprioritize the node in the priority queue or to discard it entirely before insertion.
 
-\section{Flexible Instance Generation and Experimental Configuration}
+\section{Flexible instance generation and experimental configuration}
 \label{subsec:instance-generation}
 
 The inherited experimental setup allowed testing multiple problem sizes by specifying pairs \((n_{\text{jobs}}, n_{\text{machines}})\) and iterating over a fixed range of random seeds.
@@ -497,7 +497,7 @@ This choice is sufficient for measuring approximation quality and aligns with th
 Finally, this setup made it possible to directly compare configurations with and without profiling under comparable approximation guarantees.
 Since profiling introduces a more relaxed stopping condition, non-profiling configurations were evaluated using a correspondingly adjusted tolerance, ensuring that all comparisons refer to equivalent approximation levels.
 
-\section{Analysis and Data Exploration Pipeline}
+\section{Analysis and data exploration pipeline}
 \label{subsec:analysis-pipeline}
 
 All experimental runs were automatically logged into structured \texttt{CSV} files, with each row corresponding to a single execution of the branch-and-bound algorithm under a specific instance--configuration pair.
