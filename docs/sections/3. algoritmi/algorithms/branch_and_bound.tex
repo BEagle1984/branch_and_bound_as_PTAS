@@ -20,7 +20,7 @@ From the brief description above, we can identify three main components of Branc
 To better understand the algorithm's flow and its application to the scheduling problem, we delve into its specific characteristics in the next section.
 
 
-\subsection{Mathematical Formulation}
+\subsection{Mathematical formulation}
 To precisely describe the Branch-and-Bound algorithm for the identical machines scheduling problem, we introduce the following mathematical notation:
 \begin{itemize}
     \item $x_{j,i} \in [0,1]$ indicates the fraction of job $j$ assigned to machine $i$
@@ -84,9 +84,9 @@ Set global bounds: $\text{GLB} \leftarrow LB(\emptyset)$, $\text{GUB} \leftarrow
 \end{algorithm}
 
 
-\subsection{Key Mathematical Components}
+\subsection{Key mathematical components}
 
-\subsubsection{Lower Bound Computation}
+\subsubsection{Lower bound computation}
 For a node with fixed assignments $F$, the lower bound $LB(F)$ is computed by solving a relaxed version of the scheduling problem where jobs can be fractionally split across machines.
 Let $o_i = \sum_{(j,i) \in F} p_j$ denote the overhead (total processing time already fixed) on machine $i$.
 The relaxed problem seeks to minimize:
@@ -100,18 +100,18 @@ subject to:
 
 This can be efficiently solved using greedy allocation or binary search techniques.
 
-\subsubsection{Upper Bound via Rounding}
+\subsubsection{Upper bound via rounding}
 Given a fractional solution $\{x_{j,i}\}$ from the relaxed problem, an upper bound is obtained by converting it to a complete assignment.
 Since at most $m$ jobs can be fractionally assigned, these are rounded to integral assignments using a matching-based approach that minimizes the resulting makespan.
 
-\subsubsection{Pruning Criterion}
+\subsubsection{Pruning criterion}
 A node $(F, LB(F))$ is pruned if:
 \begin{equation}
 LB(F) \geq \text{GUB}
 \end{equation}
 This ensures that the subtree rooted at this node cannot contain a better solution than the current best.
 
-\subsubsection{Termination Condition}
+\subsubsection{Termination condition}
 The algorithm terminates when the approximation guarantee is satisfied:
 \begin{equation}
 \frac{\text{GUB}}{\text{GLB}} < 1 + \varepsilon
