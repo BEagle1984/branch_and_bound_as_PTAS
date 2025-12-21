@@ -49,7 +49,7 @@ A clear qualitative difference emerges already for moderate problem sizes:
   \item For \(m = 25\), almost all instances are solved with a relatively small number of explored nodes.
   \item At \(m = 50\), only a limited tail of hard instances approaches the node cap.
   \item Even for \(m = 75\), the majority of instances still terminate successfully.
-  \item At \(m = 100\), although the problem becomes demanding, profiling allows a non-negligible fraction of instances (roughly \(40\text{--}50\%\)) to be solved within the node limit, whereas the base version almost completely fails.
+  \item At \(m = 100\), although the problem becomes demanding, profiling allows a non-negligible fraction of instances (roughly \(40\text{--}50\%\)) to be solved within the node limit, whereas the base version becomes ineffective.
 \end{itemize}
 
 These results clearly show that profiling delays the onset of combinatorial explosion and preserves algorithmic viability for significantly larger instances.
@@ -65,7 +65,7 @@ As expected, reducing \(\varepsilon\) substantially increases the computational 
 However, the relative advantage of profiling becomes even more pronounced:
 
 \begin{itemize}
-  \item Without profiling, the algorithm struggles already at \(m = 25\), with a sharp increase in failed instances.
+  \item Without profiling, the algorithm exhibits poor scalability already at \(m = 25\), with a sharp increase in failed instances.
   \item For \(\varepsilon = 0.01\), the \texttt{NO\_PROFILING} variant is effectively unusable beyond very small instances.
   \item In contrast, the profiling-enhanced version remains viable for small and medium-sized instances, even under these stricter precision requirements, and consistently explores one order of magnitude fewer nodes than the base version in comparable settings.
 \end{itemize}
