@@ -41,6 +41,11 @@ This setup is consistent with the overall methodology described in the previous 
 
 Figure~\ref{fig:nodes_e01} reports the number of explored nodes for each instance, sorted in increasing order, for both algorithm variants and increasing instance sizes.
 
+Each plot reports, for a fixed pair of problem size parameters \((m,n)\), the number of explored nodes required by the algorithm to terminate on each of the 200 generated instances.
+Each instance corresponds to a different random seed.
+Instances are sorted in increasing order of explored nodes to highlight the distribution of difficulty within each problem size.
+Reaching the maximum value of 2000 nodes indicates that the algorithm failed to terminate within the imposed exploration budget, and therefore could not produce a solution within the desired approximation guarantee.
+
 A clear qualitative difference emerges already for moderate problem sizes:
 
 \paragraph{\texttt{NO\_PROFILING}.}
