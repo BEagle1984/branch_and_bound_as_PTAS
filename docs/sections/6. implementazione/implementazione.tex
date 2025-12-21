@@ -75,7 +75,7 @@ In practice, an additional limit on the maximum number of explored nodes may be 
 \caption{Branch-and-bound framework (unrelated machines scheduling)}
 \label{alg:bb-framework}
 \KwIn{instance $p_{j,i}$, tolerance $\varepsilon$; strategies for node selection, bounding, branching, rounding}
-\KwOut{best solution $X^\star$ and its objective value $\mathrm{LUB}$}
+\KwOut{best solution $X^\star$ and its objective value $\mathrm{LUB}$ (makespan)}
 
 $(X^{\text{frac}}, \mathrm{LB}) \gets \texttt{LowerBound}(p, o{=}0, \texttt{fixed}{=}\emptyset)$\;
 \If{$X^{\text{frac}}$ is integral}{
@@ -491,7 +491,7 @@ The same instance can be evaluated under multiple algorithmic variants, and conv
 This flexibility proved essential during the exploratory phase of the project, allowing the identification of meaningful parameter ranges and combinations worthy of deeper analysis.
 
 In addition, to reduce computational overhead and enable large-scale testing, exact optimal solutions were no longer computed for every instance.
-Instead, the fractional optimum for identical machines, given by \(\sum_j p_j / m\), was used as a consistent baseline for performance evaluation.
+Instead, the fractional optimum for identical machines, given by $\frac{1}{m}\sum_j p_j$, was used as a consistent baseline for performance evaluation.
 This choice is sufficient for measuring approximation quality and aligns with the theoretical framework of the PTAS, while significantly improving experimental throughput.
 
 Finally, this setup made it possible to directly compare configurations with and without profiling under comparable approximation guarantees.
