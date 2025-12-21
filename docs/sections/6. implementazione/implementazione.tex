@@ -25,7 +25,7 @@ The same structure is later reused for the identical machines case, where only t
 
 \subsection{Implementation overview}
 
-Each node of the branch-and-bound tree represents a subproblem corresponding to a partial assignment of jobs to machines and is characterised by:
+Each node of the branch-and-bound tree represents a subproblem corresponding to a partial assignment of jobs to machines and is characterized by:
 \begin{itemize}
   \item a set of fixed assignments \(\texttt{fixed} \subseteq \{0,\dots,n-1\} \times \{0,\dots,m-1\}\),
   \item an overhead vector $\mathbf{o} \in \mathbb{R}^m$, where $o_i$ denotes the load already assigned to machine $i$,
@@ -130,7 +130,7 @@ $\mathrm{LLB} \gets \mathrm{LB}$\;
 \Return $(X^{\star}, \mathrm{LUB})$\;
 \end{algorithm}
 
-Algorithm~\ref{alg:bb-framework} summarises the inherited branch-and-bound framework used for the unrelated machines scheduling problem.
+Algorithm~\ref{alg:bb-framework} summarizes the inherited branch-and-bound framework used for the unrelated machines scheduling problem.
 For each node, a relaxation is solved to obtain a fractional solution \(X^{\text{frac}}\) and a lower bound \(\text{LB}\) on the optimal makespan of the corresponding subproblem.
 
 A global upper bound \(\text{LUB}\) is maintained through feasible integer solutions produced either by rounding fractional solutions (Section~\ref{subsec:rounding-strategies}) or by integrality of the relaxation.
@@ -197,7 +197,7 @@ The implementation assumes \(|F| \le m\), which is consistent with the structure
 Rounding proceeds by first computing the machine completion times induced by (i) integrally assigned jobs in \(X^{\text{frac}}\) and (ii) fixed jobs, and then assigning the jobs in \(F\) according to one of the following strategies.
 
 \paragraph{Assign-to-shortest machine (\texttt{all\_to\_shortest}).}
-Each fractional job \(j \in F\) is assigned to the machine that minimises its processing time:
+Each fractional job \(j \in F\) is assigned to the machine that minimizes its processing time:
 \[
   i^{\star}(j) \in \arg\min_{i = 0,\dots,m-1} p_{j,i}.
 \]
@@ -228,7 +228,7 @@ For each fractional job \(j\), the quantity
     \min_{i = 0,\dots,m-1} p_{j,i}
 \]
 is considered.
-The branching job is the one that maximises this minimum processing time.
+The branching job is the one that maximizes this minimum processing time.
 This rule gives priority to jobs that are relatively expensive even on their best machine, so that branching decisions focus on jobs with high potential impact on the makespan.
 
 \paragraph{Maximum average processing time (\texttt{max\_avg\_proc}).}
@@ -478,7 +478,7 @@ While sufficient for basic validation, this approach provided limited flexibilit
 To support a more systematic and exploratory experimental analysis, the instance-generation pipeline was extended to decouple \emph{instance specification} from \emph{algorithmic configuration}.
 In the revised setup, an experiment is defined by explicitly pairing a concrete problem instance with a specific set of algorithmic parameters.
 
-More precisely, each experiment is characterised by:
+More precisely, each experiment is characterized by:
 \begin{itemize}
   \item the number of machines and jobs,
   \item the distribution and range of processing times,
