@@ -2,7 +2,7 @@
 \label{ch:requirements}
 
 The semester project is carried out in the context of the paper \emph{Branch-and-Bound Algorithms as Polynomial-Time Approximation Scheme}~\cite{bb-ptas}, written by our supervisor Prof.\ Monaldo Mastrolilli together with István Encz Koppányi and Eleonora Vercesi.
-The authors provide a Python implementation of a Branch-and-Bound algoritm for the \emph{unrelated machines} case, including heuristics and bound management.
+The authors provide a Python implementation of a branch-and-bound algorithm for the \emph{unrelated machines} case, including heuristics and bound management.
 Our task consists in thoroughly understanding this implementation, adapting it to the \emph{identical machines} case, and integrating the \emph{profiling} technique, which is applicable since identical machines represent a special case of uniform machines.
 The final objective is to experimentally validate the results presented in the paper by comparing the base version of the algorithm with the profiling-enhanced variant.
 
@@ -11,7 +11,7 @@ The final objective is to experimentally validate the results presented in the p
 The project involves the following functional requirements:
 
 \begin{description}[style=nextline]
-    \item[R1 -- Solver for identical machines] Develop a variant of the Branch-and-Bound algorithm capable of solving the scheduling problem on identical machines, by adapting the structure and functions of the existing implementation for unrelated machines.
+    \item[R1 -- Solver for identical machines] Develop a variant of the branch-and-bound algorithm capable of solving the scheduling problem on identical machines, by adapting the structure and functions of the existing implementation for unrelated machines.
     \item[R2 -- Profiling integration] Implement the profiling mechanism described in the paper, in order to obtain a second variant of the algorithm that is directly comparable with the base version.
     \item[R3 -- Experiment generation and execution] Run both variants of the algorithm and record the results, collecting a sufficiently large and meaningful dataset.
     \item[R4 -- Data collection] Store structured information such as the number of explored nodes, execution time, deviation from the optimal solution of the considered instance, and other relevant metrics.

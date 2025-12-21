@@ -1,12 +1,12 @@
-\section{Branch-and-Bound}
-Branch-and-Bound (B\&B) is the foundation of this project and is one of the numerous techniques available for solving combinatorial optimization problems, such as the scheduling problem.
+\section{Branch-and-bound}
+Branch-and-bound is the foundation of this project and is one of the numerous techniques available for solving combinatorial optimization problems, such as the scheduling problem.
 Other techniques include greedy algorithms, dynamic programming, and heuristic methods, which we will not mention in this context.
 
-The Branch-and-Bound method is used to solve NP-hard problems.
+The branch-and-bound method is used to solve NP-hard problems.
 The algorithm systematically explores the solution space by dividing the problem into smaller subproblems (\emph{branching}) and calculating lower and upper bounds to evaluate the quality of the solutions found (\emph{bounding}). Once a subproblem's bound indicates that it cannot yield a better solution than the best one found so far, a new subproblem is selected for exploration.
 If a subproblem's bound is worse than the current best solution, it is ignored and the process continues (\emph{selection/search}). This process continues until all subproblems have been explored or pruned, ultimately leading to the optimal solution.
 
-From the brief description above, we can identify three main components of Branch-and-Bound:
+From the brief description above, we can identify three main components of branch-and-bound:
 \begin{itemize}
   \item \textbf{Branching}: The division of the problem into smaller subproblems.
   In our context, this means to assign a specific job to a specific machine.
@@ -21,7 +21,7 @@ To better understand the algorithm's flow and its application to the scheduling 
 
 
 \subsection{Mathematical formulation}
-To precisely describe the Branch-and-Bound algorithm for the identical machines scheduling problem, we introduce the following mathematical notation:
+To precisely describe the branch-and-bound algorithm for the identical machines scheduling problem, we introduce the following mathematical notation:
 \begin{itemize}
     \item $x_{j,i} \in [0,1]$ indicates the fraction of job $j$ assigned to machine $i$
     \item $F \subseteq \{1,\ldots,n\} \times \{1,\ldots,m\}$ is the set of fixed assignments at a given node
@@ -80,7 +80,7 @@ Set global bounds: $\text{GLB} \leftarrow LB(\emptyset)$, $\text{GUB} \leftarrow
 }
 \BlankLine
 \Return{Best assignment found with makespan $\text{GUB}$}\;
-\caption{Branch-and-Bound for Identical Machines Scheduling}
+\caption{Branch-and-bound for identical machines scheduling}
 \end{algorithm}
 
 

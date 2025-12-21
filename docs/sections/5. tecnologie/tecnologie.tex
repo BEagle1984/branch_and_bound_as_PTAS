@@ -4,7 +4,7 @@
 \section{Algorithm implementation}
 
 The implementation of the algorithms was developed in \emph{Python}, starting from the code provided by the authors of the paper~\cite{bb-ptas}, which was originally designed for the \emph{unrelated machines} case.
-In that version, the lower bound of the Branch-and-Bound nodes was computed using the \emph{SCIP} solver~\cite{scip}, accessed through the \emph{PySCIPOpt} library.
+In that version, the lower bound of the branch-and-bound nodes was computed using the \emph{SCIP} solver~\cite{scip}, accessed through the \emph{PySCIPOpt} library.
 This choice, which is appropriate for the general problem, allows the authors to obtain fractional bounds by means of \emph{binary search} and \emph{linear relaxation}.
 
 In our project, however, this approach proved to be overly expensive and not strictly necessary.
@@ -13,7 +13,7 @@ Moreover, the use of \emph{SCIP}~\cite{scip} introduced an additional practical 
 The absence of this guarantee compromised the reliability of the rounding phase and introduced a non-negligible computational overhead.
 
 For these reasons, we completely replaced the use of \emph{SCIP}~\cite{scip} with a \emph{greedy}-based lower bound computation method, which is fully sufficient for the identical machines case and significantly more efficient from a computational perspective.
-This choice allowed us to drastically reduce the processing time of the Branch-and-Bound nodes while maintaining a bound quality adequate for the purposes of the project.
+This choice allowed us to drastically reduce the processing time of the branch-and-bound nodes while maintaining a bound quality adequate for the purposes of the project.
 
 \section{Data analysis}
 
