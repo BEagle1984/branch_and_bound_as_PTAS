@@ -51,17 +51,15 @@ A clear qualitative difference emerges already for moderate problem sizes:
 \paragraph{\texttt{NO\_PROFILING}.}
 \begin{itemize}
   \item For \(m = 5\), all instances are solved well below the node limit.
+  \item At \(m = 10\), a few hard instances begin to approach the node cap.
   \item At \(m = 25\), a significant fraction of instances already reaches the maximum of 2000 explored nodes.
-  \item For \(m = 50\), the vast majority of instances hit the node cap, indicating that the algorithm is no longer able to effectively prune the search space.
-  \item For \(m = 75\) and \(m = 100\), more than \(80\text{--}90\%\) of instances fail to terminate within the imposed limit.
+  \item From \(m = 50\) onward, the majority of instances hit the node cap, indicating that the algorithm is no longer able to effectively prune the search space.
 \end{itemize}
 
 \paragraph{\texttt{PRUNE} (profiling enabled).}
 \begin{itemize}
-  \item For \(m = 25\), almost all instances are solved with a relatively small number of explored nodes.
-  \item At \(m = 50\), only a limited tail of hard instances approaches the node cap.
-  \item Even for \(m = 75\), the majority of instances still terminate successfully.
-  \item At \(m = 100\), although the problem becomes demanding, profiling allows a non-negligible fraction of instances (roughly \(40\text{--}50\%\)) to be solved within the node limit, whereas the base version becomes ineffective.
+  \item Up to \(m = 75\), all instances are solved within the exploration budget, with a substantial margin.
+  \item At \(m = 100\), although the problem becomes demanding, profiling allows all but one instance to be solved within the imposed limit.
 \end{itemize}
 
 These results clearly show that profiling delays the onset of combinatorial explosion and preserves algorithmic viability for significantly larger instances.
@@ -91,9 +89,8 @@ As expected, reducing \(\varepsilon\) substantially increases the computational 
 However, the relative advantage of profiling becomes even more pronounced:
 
 \begin{itemize}
-  \item Without profiling, the algorithm exhibits poor scalability already at \(m = 25\), with a sharp increase in failed instances.
-  \item For \(\varepsilon = 0.01\), the \texttt{NO\_PROFILING} variant is effectively unusable beyond very small instances.
-  \item In contrast, the profiling-enhanced version remains viable for small and medium-sized instances, even under these stricter precision requirements, and consistently explores one order of magnitude fewer nodes than the base version in comparable settings.
+  \item Without profiling, the algorithm exhibits degraded performance already at \(m = 10\), with failure rates increasing rapidly as the problem size grows.
+  \item In contrast, the profiling-enhanced version remains viable for smaller instances, even under these stricter precision requirements, and consistently explores one order of magnitude fewer nodes than the base version in comparable settings.
 \end{itemize}
 
 This behavior confirms that profiling is particularly effective in regimes where high precision exacerbates the branching complexity, precisely the scenarios where a PTAS-style pruning strategy is theoretically motivated.
@@ -105,6 +102,7 @@ Several important observations can be drawn from these results:
 \begin{itemize}
   \item \textbf{Profiling dramatically reduces the effective search space.}
   The reduction in explored nodes is systematic and grows with instance size, confirming that profile-based equivalence detection successfully eliminates large sets of redundant subproblems.
+  This effect is also quantified by the failure rates reported in Tables~\ref{tab:failure_e01}--\ref{tab:failure_e001}, which summarize the fraction of instances reaching the 2000-node exploration cap for each approximation tolerance.
   \item \textbf{The benefit increases with problem difficulty.}
   For easy instances, both variants perform similarly.
   The advantage of profiling becomes substantial exactly when the base algorithm begins to struggle.
@@ -128,19 +126,56 @@ These findings experimentally validate the theoretical motivations behind profil
 
 \section*{Indicative failure rates at the node cap}
 
-\begin{table}[h]
+Table~\ref{tab:failure_e01}--\ref{tab:failure_e001} summarize the approximate fraction of instances that reach the maximum exploration budget of 2000 nodes, for each problem size and approximation tolerance.
+
+\begin{table}[H]
 \centering
-\caption{Approximate percentage of instances reaching the 2000-node limit (200 instances per size).}
-\label{tab:failure_rates}
+\caption{Approximate percentage of instances reaching the 2000-node limit for $\varepsilon = 0.1$ (NO\_PROFILING: $\varepsilon = 0.2$).}
+\label{tab:failure_e01}
 \begin{tabular}{r r c c}
 \hline
 \(m\) & \(n\) & \texttt{NO\_PROFILING} & \texttt{PRUNE} \\
 \hline
-5   & 10  & 0\%        & 0\% \\
-25  & 50  & 60--80\%   & 0--5\% \\
-50  & 100 & 90--100\%  & 10--30\% \\
-75  & 150 & 90--100\%  & 20--40\% \\
-100 & 200 & 90--100\%  & 40--50\% \\
+5   & 10  & 0\% & 0\% \\
+10  & 20  & 5\% & 0\% \\
+25  & 50  & 30\% & 0\% \\
+50  & 100 & 60\% & 0\% \\
+75  & 150 & 65\% & 0\% \\
+100 & 200 & 70\% & 0\% \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Approximate percentage of instances reaching the 2000-node limit for $\varepsilon = 0.05$ (NO\_PROFILING: $\varepsilon = 0.1$).}
+\label{tab:failure_e005}
+\begin{tabular}{r r c c}
+\hline
+\(m\) & \(n\) & \texttt{NO\_PROFILING} & \texttt{PRUNE} \\
+\hline
+10  & 20  & 50\% & 0\% \\
+25  & 50  & 70\% & 5\% \\
+50  & 100 & 80\% & 20\% \\
+75  & 150 & 80\% & 40\% \\
+100 & 200 & 75\% & 50\% \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Approximate percentage of instances reaching the 2000-node limit for $\varepsilon = 0.01$ (NO\_PROFILING: $\varepsilon = 0.02$).}
+\label{tab:failure_e001}
+\begin{tabular}{r r c c}
+\hline
+\(m\) & \(n\) & \texttt{NO\_PROFILING} & \texttt{PRUNE} \\
+\hline
+10  & 20  & 75\% & 1\% \\
+25  & 50  & 75\% & 25\% \\
+50  & 100 & 80\% & 50\% \\
+75  & 150 & 80\% & 60\% \\
+100 & 200 & 75\% & 55\% \\
 \hline
 \end{tabular}
 \end{table}
