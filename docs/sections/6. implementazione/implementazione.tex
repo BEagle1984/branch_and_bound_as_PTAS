@@ -6,7 +6,7 @@ In the implementation, arrays are $0$-indexed (machines $i\in\{0,\dots,m-1\}$, j
 To avoid ambiguity, we use:
 \begin{itemize}
   \item In the reference Python implementation, the global bounds are stored in variables named \texttt{LLB} and \texttt{LUB}.
-  Throughout this chapter, we keep the same notation to stay close to the implementation; elsewhere in the report we refer to these quantities as $\mathrm{GLB}$ and $\mathrm{GUB}$ to emphasise their global scope:
+  Throughout this chapter, we keep the same notation to stay close to the implementation; elsewhere in the report we refer to these quantities as $\mathrm{GLB}$ and $\mathrm{GUB}$ to emphasize their global scope:
   \[
     \texttt{LLB} \equiv \mathrm{GLB}, \qquad \texttt{LUB} \equiv \mathrm{GUB}.
   \]
@@ -21,7 +21,7 @@ The theoretical foundations and correctness of the branch-and-bound algorithm ar
 In this section, we focus exclusively on its concrete implementation, data structures, and control flow.
 
 The implementation employed in this project is based on a branch-and-bound framework originally developed for the \emph{unrelated machines scheduling} problem.
-The same structure is later reused for the identical machines case, where only the lower-bound routines and selected optimisation components (such as profiling) are adapted, while the core branching, bounding, rounding, and node-selection logic is preserved.
+The same structure is later reused for the identical machines case, where only the lower-bound routines and selected optimization components (such as profiling) are adapted, while the core branching, bounding, rounding, and node-selection logic is preserved.
 
 \subsection{Implementation overview}
 
@@ -43,7 +43,7 @@ In the implementation, \(\text{LLB}\) is derived from the set of active nodes an
 \]
 
 \medskip
-The behaviour of the algorithm is governed by four main components.
+The behavior of the algorithm is governed by four main components.
 The following components correspond to the theoretical elements introduced in Chapter~\ref{ch:algorithms}, and are described here only in terms of their implementation.
 
 \paragraph{Bounding.}
@@ -253,10 +253,10 @@ The implementation supports the following strategies.
 \paragraph{Lowest lower bound first.}
 Nodes are ordered by increasing node lower bound \(\text{LB}\).
 At each iteration, the node with the smallest lower bound is selected.
-This strategy prioritises subproblems that appear most promising with respect to the objective and is commonly used in best-first branch-and-bound variants.
+This strategy prioritizes subproblems that appear most promising with respect to the objective and is commonly used in best-first branch-and-bound variants.
 
 \paragraph{Depth-first search.}
-Nodes with larger depth in the search tree are prioritised.
+Nodes with larger depth in the search tree are prioritized.
 This strategy explores complete assignments early, which may quickly produce good feasible solutions and improve the global upper bound, potentially increasing pruning opportunities.
 
 \paragraph{Breadth-first search.}
@@ -267,7 +267,7 @@ This strategy explores the search tree level by level and provides a more unifor
 \label{sec:bb-identical}
 
 This section describes the adaptation of the inherited branch-and-bound framework to the \emph{identical machines scheduling} problem, which constitutes the main scope of this project.
-While the overall structure of the algorithm remains unchanged, the identical-machines setting enables problem-specific simplifications and optimisations that significantly affect the
+While the overall structure of the algorithm remains unchanged, the identical-machines setting enables problem-specific simplifications and optimizations that significantly affect the
 bounding procedures, rounding strategies, stopping criterion, and the integration of profiling mechanisms inspired by the PTAS described in the reference paper~\cite{bb-ptas}.
 
 The contribution of this project lies in the faithful and robust translation of these ideas into an efficient implementation, addressing practical issues that arise.
@@ -282,7 +282,7 @@ This structural simplification leads to the following consequences:
   \item The fractional optimum for the root relaxation admits a closed form, given by the average load.
   \item Lower bound computations can be simplified and made solver-independent.
   \item Rounding strategies can exploit the symmetry between machines and rely on current machine loads.
-  \item Profiling-based prioritisation and pruning can be integrated to reduce the effective search space.
+  \item Profiling-based prioritization and pruning can be integrated to reduce the effective search space.
   \item The stopping criterion must be relaxed to account for the additional approximation introduced by profiling.
 \end{itemize}
 
@@ -382,7 +382,7 @@ Accordingly, the algorithm is allowed to terminate when
 For the same input value of \(\varepsilon\), this condition admits a larger relative optimality gap than in the non-profiling case.
 The relaxed stopping criterion compensates for the approximation introduced by profile-based pruning and ensures that the final solution satisfies the approximation bound established in the paper.
 
-\subsection{Profiling-based prioritisation and pruning}
+\subsection{Profiling-based prioritization and pruning}
 \label{subsec:profiling}
 
 Profiling is introduced to reduce the effective search space by identifying nodes that induce similar load distributions.
@@ -393,7 +393,7 @@ Each node is associated with a \emph{profile key} that abstracts the distributio
 Three profiling modes are supported:
 \begin{itemize}
   \item \texttt{NO\_PROFILING}: profiling is disabled.
-  \item \texttt{PRIORITY}: nodes without a previously seen profile are prioritised in the queue.
+  \item \texttt{PRIORITY}: nodes without a previously seen profile are prioritized in the queue.
   \item \texttt{PRUNE}: nodes whose profile matches one already seen at the same depth are discarded.
 \end{itemize}
 
@@ -473,7 +473,7 @@ Depending on the selected profiling mode, this information is used either to dep
 \label{subsec:instance-generation}
 
 The inherited experimental setup allowed testing multiple problem sizes by specifying pairs \((n_{\text{jobs}}, n_{\text{machines}})\) and iterating over a fixed range of random seeds.
-While sufficient for basic validation, this approach provided limited flexibility when exploring the behaviour of the algorithm under different parameter combinations.
+While sufficient for basic validation, this approach provided limited flexibility when exploring the behavior of the algorithm under different parameter combinations.
 
 To support a more systematic and exploratory experimental analysis, the instance-generation pipeline was extended to decouple \emph{instance specification} from \emph{algorithmic configuration}.
 In the revised setup, an experiment is defined by explicitly pairing a concrete problem instance with a specific set of algorithmic parameters.
@@ -503,7 +503,7 @@ Since profiling introduces a more relaxed stopping condition, non-profiling conf
 All experimental runs were automatically logged into structured \texttt{CSV} files, with each row corresponding to a single execution of the branch-and-bound algorithm under a specific instance--configuration pair.
 The recorded data include instance characteristics, algorithmic parameters, runtime statistics, search metrics (e.g.\ explored nodes, depth), and solution quality indicators.
 
-To analyse and interpret these results, a set of Python notebooks was developed.
+To analyze and interpret these results, a set of Python notebooks was developed.
 These notebooks served as an exploratory and analytical layer on top of the raw experimental data, supporting data filtering, aggregation, visualization, and comparison across configurations.
 Standard data-analysis libraries were used to load the \texttt{CSV} files, manipulate the datasets, and generate plots illustrating trends and performance trade-offs.
 
