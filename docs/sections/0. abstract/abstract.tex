@@ -1,14 +1,14 @@
 \chapter{Abstract}
 \label{ch:abstract}
 
-Branch-and-Bound algorithms are traditionally viewed as exact methods for solving NP-hard optimization problems, often limited in practice by their exponential worst-case complexity.
-Recent theoretical work has shown that, under suitable conditions, standard Branch-and-Bound frameworks can exhibit Polynomial-Time Approximation Scheme (PTAS) behavior for parallel machine scheduling problems.
+Branch-and-bound algorithms are traditionally viewed as exact methods for solving NP-hard optimization problems, often limited in practice by their exponential worst-case complexity.
+Recent theoretical work has shown that, under suitable conditions, standard branch-and-bound frameworks can exhibit Polynomial-Time Approximation Scheme (PTAS) behavior for parallel machine scheduling problems.
 
 This project provides an empirical investigation of these results, focusing on the practical impact of profiling-based optimizations proposed for the uniform machines setting.
 The study concentrates on the identical parallel machine scheduling problem, a special case of uniform machines, in order to evaluate these optimizations in a controlled and interpretable environment.
 
-A Branch-and-Bound algorithm was implemented and extended with approximation-aware stopping criteria and profiling-based prioritization and pruning mechanisms.
+A branch-and-bound algorithm was implemented and extended with approximation-aware stopping criteria and profiling-based prioritization and pruning mechanisms.
 A flexible experimental pipeline was developed to generate instances, execute large-scale experiments, and collect detailed performance data across different problem sizes and approximation parameters.
 
 The experimental results show that profiling-based strategies can substantially reduce redundant exploration of the search space and enable high-quality approximate solutions to be obtained within practical computational limits.
-Moreover, the analysis highlights the strong influence of instance structure on algorithmic behavior, suggesting that a careful characterization of instance hardness is essential for understanding the practical performance of approximation-oriented Branch-and-Bound methods.
+Moreover, the analysis highlights the strong influence of instance structure on algorithmic behavior, suggesting that a careful characterization of instance hardness is essential for understanding the practical performance of approximation-oriented branch-and-bound methods.
